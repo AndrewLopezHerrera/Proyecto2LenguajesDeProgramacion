@@ -55,6 +55,10 @@ common warnings
     ghc-options: -Wall
 
 executable GestionDeInventarios
+    other-modules:
+        Datas.Data
+        Inicio.InformacionComercial
+
     -- Import common warning flags.
     import:           warnings
 
@@ -68,7 +72,12 @@ executable GestionDeInventarios
     -- other-extensions:
 
     -- Other library packages from which modules are imported.
-    build-depends:    base ^>=4.17.2.1
+    build-depends:      base ^>=4.17.2.1,
+                        aeson,
+                        text,
+                        bytestring,
+                        filepath,
+                        directory
 
     -- Directories containing source files.
     hs-source-dirs:   app

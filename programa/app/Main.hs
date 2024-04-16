@@ -1,4 +1,11 @@
 module Main where
 
+import Datas.Data
+import Inicio.InformacionComercial
+
 main :: IO ()
-main = putStrLn "Hello, Haskell!"
+main = 
+    do
+        putStrLn "Bienvenido al Sistema de Inventarios"
+        empresa <- cargarDatosEmpresa
+        print empresa

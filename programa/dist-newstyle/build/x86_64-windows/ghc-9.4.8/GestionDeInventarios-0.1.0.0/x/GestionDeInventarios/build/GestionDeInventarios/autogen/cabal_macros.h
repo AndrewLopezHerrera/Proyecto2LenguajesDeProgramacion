@@ -10,6 +10,16 @@
   (major1) == 0 && (major2) <  1 || \
   (major1) == 0 && (major2) == 1 && (minor) <= 0)
 #endif /* MIN_VERSION_GestionDeInventarios */
+/* package aeson-2.2.1.0 */
+#ifndef VERSION_aeson
+#define VERSION_aeson "2.2.1.0"
+#endif /* VERSION_aeson */
+#ifndef MIN_VERSION_aeson
+#define MIN_VERSION_aeson(major1,major2,minor) (\
+  (major1) <  2 || \
+  (major1) == 2 && (major2) <  2 || \
+  (major1) == 2 && (major2) == 2 && (minor) <= 1)
+#endif /* MIN_VERSION_aeson */
 /* package base-4.17.2.1 */
 #ifndef VERSION_base
 #define VERSION_base "4.17.2.1"
@@ -20,6 +30,46 @@
   (major1) == 4 && (major2) <  17 || \
   (major1) == 4 && (major2) == 17 && (minor) <= 2)
 #endif /* MIN_VERSION_base */
+/* package bytestring-0.11.5.3 */
+#ifndef VERSION_bytestring
+#define VERSION_bytestring "0.11.5.3"
+#endif /* VERSION_bytestring */
+#ifndef MIN_VERSION_bytestring
+#define MIN_VERSION_bytestring(major1,major2,minor) (\
+  (major1) <  0 || \
+  (major1) == 0 && (major2) <  11 || \
+  (major1) == 0 && (major2) == 11 && (minor) <= 5)
+#endif /* MIN_VERSION_bytestring */
+/* package directory-1.3.7.1 */
+#ifndef VERSION_directory
+#define VERSION_directory "1.3.7.1"
+#endif /* VERSION_directory */
+#ifndef MIN_VERSION_directory
+#define MIN_VERSION_directory(major1,major2,minor) (\
+  (major1) <  1 || \
+  (major1) == 1 && (major2) <  3 || \
+  (major1) == 1 && (major2) == 3 && (minor) <= 7)
+#endif /* MIN_VERSION_directory */
+/* package filepath-1.4.2.2 */
+#ifndef VERSION_filepath
+#define VERSION_filepath "1.4.2.2"
+#endif /* VERSION_filepath */
+#ifndef MIN_VERSION_filepath
+#define MIN_VERSION_filepath(major1,major2,minor) (\
+  (major1) <  1 || \
+  (major1) == 1 && (major2) <  4 || \
+  (major1) == 1 && (major2) == 4 && (minor) <= 2)
+#endif /* MIN_VERSION_filepath */
+/* package text-2.0.2 */
+#ifndef VERSION_text
+#define VERSION_text "2.0.2"
+#endif /* VERSION_text */
+#ifndef MIN_VERSION_text
+#define MIN_VERSION_text(major1,major2,minor) (\
+  (major1) <  2 || \
+  (major1) == 2 && (major2) <  0 || \
+  (major1) == 2 && (major2) == 0 && (minor) <= 2)
+#endif /* MIN_VERSION_text */
 
 /* tool gcc-14.0.6 */
 #ifndef TOOL_VERSION_gcc
