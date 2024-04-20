@@ -58,6 +58,8 @@ executable GestionDeInventarios
     other-modules:
         Datas.Data
         Inicio.InformacionComercial
+        Inicio.InformacionBodegas
+        Inicio.InformacionUsuarios
 
     -- Import common warning flags.
     import:           warnings
