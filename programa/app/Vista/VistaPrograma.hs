@@ -2,21 +2,29 @@ module Vista.VistaPrograma (
     ejecutarMenuPrincipal
 ) where
 
-ejecutarMenuPrincipal :: OI ()
-ejecutarMenuPrincipal opcion =
-    do
-        imprimirMenuPrincipal;
-        let opcion <- getLine;
-        case opcion of
-            "1" -> ejecutarMenuPrincipal opcion
-            "2" -> ejecutarMenuPrincipal opcion
-            "3" -> ejecutarMenuPrincipal opcion
-            "4" -> ejecutarMenuPrincipal opcion
-            "5" -> ejecutarMenuPrincipal opcion
-            "6" -> ejecutarMenuPrincipal opcion
-            "7" -> do strPutLn "\n\t***Hasta luego***"
+import System.IO
+import Operaciones.CargarMostrarArticulos
 
-imprimirMenuPrincipal :: IO -> IO()
+ejecutarMenuPrincipal :: IO ()
+ejecutarMenuPrincipal =
+    do
+        imprimirMenuPrincipal
+        opcion <- getLine
+        case opcion of
+            "1" -> do putStrLn "Ingrese la ruta del archivo de artículos:"
+                      ruta <- getLine
+                      articulos <- cargarArticulos ruta
+                      putStrLn "Artículos cargados:"
+                      mostrarArticulos articulos
+            "2" -> ejecutarMenuPrincipal
+            "3" -> ejecutarMenuPrincipal
+            "4" -> ejecutarMenuPrincipal
+            "5" -> ejecutarMenuPrincipal
+            "6" -> ejecutarMenuPrincipal
+            "7" -> putStrLn "\n\t***Hasta luego***"
+            _   -> putStrLn "Opción no invalida"
+
+imprimirMenuPrincipal :: IO ()
 imprimirMenuPrincipal = do
     putStr "Menu principal\n\t1. Cargar y mostrar artículos"
     hFlush stdout
