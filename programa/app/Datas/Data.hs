@@ -4,6 +4,9 @@ module Datas.Data
   ( Empresa(..)
   , Bodega(..)
   , Usuario(..)
+  , Articulo(..)
+  , Ingreso(..)
+  , OrdenCompra(..)
   , getNombreEmpresa
   , getSitioWeb
   , getContacto
@@ -22,7 +25,7 @@ import Data.Aeson
 import Data.Text (Text, pack)
 
 data Empresa =
-    Empresa { nombreEmpresa  :: !Text, 
+    Empresa { nombreEmpresa  :: !Text,
     sitioWeb :: !Text,
     contacto :: !Text
     } deriving (Show,Generic)
@@ -85,9 +88,31 @@ getSegundoApellido (Usuario _ _ _ segundoApellido _) = segundoApellido
 getPuesto :: Usuario -> Text
 getPuesto (Usuario _ _ _ _ puesto) = puesto
 
-data OrdenCompra =
-    OrdenCompra{
-        cedulaCliente :: Int,
-        nombreCliente :: Int,
-        articulos ::
-    }
+data Tipo = ENL | GBA | FRU | CON | VEG deriving (Show, Read, Eq)
+data TipoIVA = REG | ESP deriving (Show, Read, Eq)
+data Articulo = Articulo { codigo :: String
+                         , nombre :: String
+                         , costo :: Double
+                         , tipo :: Tipo
+                         , tipoIVA :: TipoIVA
+                         } deriving (Show, Eq)
+
+data Ingreso = Ingreso { codigoIngreso :: String
+                       , idUsuario :: String
+                       , fecha :: String
+                       , lineas :: [LineaIngreso]
+                       } deriving (Show)
+data LineaIngreso = LineaIngreso { codigoArticulo :: String
+                                 , identificadorBodega :: String
+                                 , cantidad :: Int
+                                 } deriving (Show)
+
+data OrdenCompra = OrdenCompra { idOrden :: String
+                               , cedulaCliente :: String
+                               , nombreCliente :: String
+                               , fecha :: String
+                               , lineas :: [LineaOrdenCompra]
+                               } deriving (Show)
+data LineaOrdenCompra = LineaOrdenCompra { codigoArticulo :: String
+                                         , cantidad :: Int
+                                         } deriving (Show)

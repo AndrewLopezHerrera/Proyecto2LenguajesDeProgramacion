@@ -6,22 +6,9 @@ module Operaciones.CargarMostrarIngresos(
 
 import Operaciones.CargarMostrarArticulos (splitComa)
 import System.IO
+import Datas.Data
 import Data.Time.Clock (getCurrentTime)
 import Data.Time.Format (formatTime, defaultTimeLocale)
-import qualified Data.Map as Map
-
-data Ingreso = Ingreso { codigoIngreso :: String
-                       , idUsuario :: String
-                       , fecha :: String
-                       , lineas :: [LineaIngreso]
-                       } deriving (Show)
-
-data LineaIngreso = LineaIngreso { codigoArticulo :: String
-                                 , identificadorBodega :: String
-                                 , cantidad :: Int
-                                 } deriving (Show)
-
-type Stock = Map.Map (String, String) Int
 
 rutaBase :: FilePath
 rutaBase = "./Archivos/"
@@ -63,8 +50,4 @@ mostrarLineasPorCodigo codigo ingresos = do
         [] -> putStrLn "No se encontro un ingreso con ese codigo."
         [ingreso] -> mostrarIngreso ingreso
         _ -> putStrLn "Error: Codigo de ingreso duplicado."
-
-actualizarStock :: Ingreso -> Stock -> Stock
-actualizarStock ingreso stockInicial =
-    foldl (\stock (LineaIngreso cod idBodega cant) -> Map.insertWith (+) (cod, idBodega) cant stock) stockInicial (lineas ingreso)
 

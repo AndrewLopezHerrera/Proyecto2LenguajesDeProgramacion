@@ -4,15 +4,7 @@ module Operaciones.CargarMostrarArticulos(
     splitComa
 ) where
 import System.IO
-
-data Tipo = ENL | GBA | FRU | CON | VEG deriving (Show, Read, Eq)
-data TipoIVA = REG | ESP deriving (Show, Read, Eq)
-data Articulo = Articulo { codigo :: String
-                         , nombre :: String
-                         , costo :: Double
-                         , tipo :: Tipo
-                         , tipoIVA :: TipoIVA
-                         } deriving (Show, Eq)
+import Datas.Data
 
 rutaBase :: FilePath
 rutaBase = "./Archivos/"

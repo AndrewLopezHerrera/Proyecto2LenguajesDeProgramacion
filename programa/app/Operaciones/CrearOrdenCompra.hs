@@ -3,19 +3,9 @@ module Operaciones.CrearOrdenCompra (
 ) where
 
 import System.IO
+import Datas.Data
 import Data.Time.Clock (getCurrentTime)
 import Data.Time.Format (formatTime, defaultTimeLocale)
-
-data OrdenCompra = OrdenCompra { idOrden :: String
-                               , cedulaCliente :: String
-                               , nombreCliente :: String
-                               , fecha :: String
-                               , lineas :: [LineaOrdenCompra]
-                               } deriving (Show)
-
-data LineaOrdenCompra = LineaOrdenCompra { codigoArticulo :: String
-                                         , cantidad :: Int
-                                         } deriving (Show)
 
 crearOrdenCompra :: IO OrdenCompra
 crearOrdenCompra = do
