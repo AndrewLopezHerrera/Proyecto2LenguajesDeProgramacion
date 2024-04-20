@@ -84,3 +84,10 @@ getSegundoApellido (Usuario _ _ _ segundoApellido _) = segundoApellido
 
 getPuesto :: Usuario -> Text
 getPuesto (Usuario _ _ _ _ puesto) = puesto
+
+data OrdenCompra =
+    OrdenCompra{
+        cedulaCliente :: Int,
+        nombreCliente :: Int,
+        articulos ::
+    }
