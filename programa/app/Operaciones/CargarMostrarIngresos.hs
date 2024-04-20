@@ -1,6 +1,7 @@
 module Operaciones.CargarMostrarIngresos(
     cargarIngreso,
-    mostrarIngreso
+    mostrarIngreso,
+    actualizarStock
 ) where
 
 import Operaciones.CargarMostrarArticulos (splitComa)
@@ -22,44 +23,48 @@ data LineaIngreso = LineaIngreso { codigoArticulo :: String
 
 type Stock = Map.Map (String, String) Int
 
-cargarIngreso :: String -> String -> IO Ingreso
-cargarIngreso idUsuario ruta = do
+rutaBase :: FilePath
+rutaBase = "./Archivos/"
+
+cargarIngreso :: String -> String -> [String] -> [String] -> IO Ingreso
+cargarIngreso idUsuario fileName articulosExistentes bodegasExistentes = do
     tiempo <- fmap (formatTime defaultTimeLocale "%Y%m%d%H%M%S") getCurrentTime
-    contenido <- readFile ruta
-    let lineasIngreso = map parseLineaIngreso (lines contenido)
+    contenido <- readFile (rutaBase ++ fileName)
+    let lineasIngreso = map (parseLineaIngreso articulosExistentes bodegasExistentes) (lines contenido)
     return $ Ingreso (idUsuario ++ "_" ++ tiempo) idUsuario tiempo lineasIngreso
 
-parseLineaIngreso :: String -> LineaIngreso
-parseLineaIngreso linea =
+parseLineaIngreso :: [String] -> [String] -> String -> LineaIngreso
+parseLineaIngreso articulosExistentes bodegasExistentes linea =
     case splitComa linea of
-        [cod, id, cant] -> LineaIngreso cod id (read cant :: Int)
-        _ -> error "Formato de línea de ingreso incorrecto."
+        [cod, id, cant] ->
+            if cantidadValida (read cant :: Int)
+                then if cod `elem` articulosExistentes
+                         then if id `elem` bodegasExistentes
+                                  then LineaIngreso cod id (read cant :: Int)
+                                  else error "Identificador de bodega no existe"
+                         else error "Codigo de articulo no existe"
+                else error "Cantidad no valida"
+        _ -> error "Formato de linea de ingreso incorrecto."
+
+cantidadValida :: Int -> Bool
+cantidadValida cant = cant > 0
 
 mostrarIngreso :: Ingreso -> IO ()
 mostrarIngreso ingreso = do
-    putStrLn $ "Código de ingreso: " ++ codigoIngreso ingreso
+    putStrLn $ "Codigo de ingreso: " ++ codigoIngreso ingreso
     putStrLn $ "ID de usuario: " ++ idUsuario ingreso
     putStrLn $ "Fecha: " ++ fecha ingreso
-    putStrLn "Líneas de ingreso:"
+    putStrLn "Lineas de ingreso:"
     mapM_ print (lineas ingreso)
 
 mostrarLineasPorCodigo :: String -> [Ingreso] -> IO ()
 mostrarLineasPorCodigo codigo ingresos = do
     case filter (\ingreso -> codigoIngreso ingreso == codigo) ingresos of
-        [] -> putStrLn "No se encontró un ingreso con ese código."
+        [] -> putStrLn "No se encontro un ingreso con ese codigo."
         [ingreso] -> mostrarIngreso ingreso
-        _ -> putStrLn "Error: Código de ingreso duplicado."
+        _ -> putStrLn "Error: Codigo de ingreso duplicado."
 
 actualizarStock :: Ingreso -> Stock -> Stock
 actualizarStock ingreso stockInicial =
     foldl (\stock (LineaIngreso cod idBodega cant) -> Map.insertWith (+) (cod, idBodega) cant stock) stockInicial (lineas ingreso)
 
-main :: IO ()
-main = do
-    putStrLn "Ingrese la ruta del archivo de ingresos de inventario:"
-    ruta <- getLine
-    putStrLn "Ingrese el ID de usuario:"
-    idUsuario <- getLine
-    ingreso <- cargarIngreso idUsuario ruta
-    putStrLn "Ingreso de inventario cargado:"
-    mostrarIngreso ingreso

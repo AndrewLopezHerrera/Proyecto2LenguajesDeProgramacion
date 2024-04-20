@@ -14,9 +14,12 @@ data Articulo = Articulo { codigo :: String
                          , tipoIVA :: TipoIVA
                          } deriving (Show, Eq)
 
+rutaBase :: FilePath
+rutaBase = "./Archivos/"
+
 cargarArticulos :: FilePath -> IO [Articulo]
-cargarArticulos path = do
-    contenido <- readFile path
+cargarArticulos nombre = do
+    contenido <- readFile (rutaBase ++ nombre)
     let lineas = lines contenido
     return $ map parseArticulo lineas
 
