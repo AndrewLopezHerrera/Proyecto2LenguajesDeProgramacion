@@ -1,5 +1,0 @@
-001,Manzanas,2.50,FRU,REG
-002,Zanahorias,1.80,VEG,REG
-003,Leche,3.00,CON,ESP
-004,Chocolate,5.50,ENL,REG
-005,Yogur,1.20,CON,ESP
