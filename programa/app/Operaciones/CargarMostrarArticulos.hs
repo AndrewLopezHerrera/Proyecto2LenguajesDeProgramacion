@@ -4,14 +4,13 @@ module Operaciones.CargarMostrarArticulos(
     splitComa
 ) where
 import System.IO
+import Data.Aeson
+import qualified Data.ByteString.Lazy as B
 import Datas.Data
-
-rutaBase :: FilePath
-rutaBase = "./Archivos/"
 
 cargarArticulos :: FilePath -> IO [Articulo]
 cargarArticulos nombre = do
-    contenido <- readFile (rutaBase ++ nombre)
+    contenido <- readFile ("./Archivos/" ++ nombre)
     let lineas = lines contenido
     return $ map parseArticulo lineas
 
@@ -30,3 +29,16 @@ splitComa (x:xs) = let (y:ys) = splitComa xs in (x:y) : ys
 
 mostrarArticulos :: [Articulo] -> IO ()
 mostrarArticulos articulos = mapM_ print articulos
+
+guardarArticulosJSON :: FilePath -> [Articulo] -> IO ()
+guardarArticulosJSON fileName articulos = do
+    let json = encode articulos
+    B.appendFile fileName (B.pack "\n")
+    B.appendFile fileName json
+
+cargarArticulosDesdeJSON :: FilePath -> IO [Articulo]
+cargarArticulosDesdeJSON fileName = do
+    json <- B.readFile fileName
+    case eitherDecode json of
+        Left err -> error $ "Error al decodificar el JSON: " ++ err
+        Right articulos -> return articulos

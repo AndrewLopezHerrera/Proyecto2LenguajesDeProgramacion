@@ -46,20 +46,24 @@ data Bodega =
     Bodega {
         id :: Int,
         capacidad :: Double,
-        ubicacion :: !Text
+        ubicacion :: !Text,
+        stock :: [LineaIngreso]
     } deriving (Show,Generic)
 
 instance FromJSON Bodega
 instance ToJSON Bodega
 
 getID :: Bodega -> Int
-getID (Bodega id _ _) = id
+getID (Bodega id _ _ _) = id
 
 getCapacidad :: Bodega -> Double
-getCapacidad (Bodega _ capacidad _) = capacidad
+getCapacidad (Bodega _ capacidad _ _) = capacidad
 
 getUbicacion :: Bodega -> Text
-getUbicacion (Bodega _ _ ubicacion) = ubicacion
+getUbicacion (Bodega _ _ ubicacion _) = ubicacion
+
+getStock :: Bodega -> [LineaIngreso]
+getStock (Bodega _ _ _ stock) = stock
 
 data Usuario = 
     Usuario{
