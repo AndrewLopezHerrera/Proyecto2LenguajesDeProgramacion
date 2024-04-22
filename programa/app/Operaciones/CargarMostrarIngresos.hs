@@ -14,23 +14,23 @@ import Data.Time.Clock (getCurrentTime)
 import Data.Time.Format (formatTime, defaultTimeLocale)
 import System.IO
 
-cargarIngreso :: String -> String -> [String] -> [String] -> IO Ingreso
+cargarIngreso :: String -> String -> [Articulo] -> [Bodega] -> IO Ingreso
 cargarIngreso idUsuario fileName articulosExistentes bodegasExistentes = do
     tiempo <- fmap (formatTime defaultTimeLocale "%Y%m%d%H%M%S") getCurrentTime
     contenido <- readFile fileName
     let lineasIngreso = map (parseLineaIngreso articulosExistentes bodegasExistentes) (lines contenido)
     return $ Ingreso (idUsuario ++ "_" ++ tiempo) idUsuario tiempo lineasIngreso
 
-parseLineaIngreso :: [String] -> [String] -> String -> LineaIngreso
+parseLineaIngreso :: [Articulo] -> [Bodega] -> String -> LineaIngreso
 parseLineaIngreso articulosExistentes bodegasExistentes linea =
     case splitComa linea of
         [cod, id, cant] ->
-            if cantidadValida (read cant :: Int)
-                then if cod `elem` articulosExistentes
-                         then if id `elem` bodegasExistentes
-                                  then LineaIngreso cod id (read cant :: Int)
-                                  else error "Identificador de bodega no existe"
-                         else error "Codigo de articulo no existe"
+            if cantidadValida (read cant :: String)
+                then case findArticulo cod articulosExistentes of
+                         Just articulo -> case findBodega (read id :: Int) bodegasExistentes of
+                                               Just bodega -> LineaIngreso (codigoArticulo articulo) (idBodega bodega) (read cant :: Int)
+                                               Nothing -> error "Identificador de bodega no existe"
+                         Nothing -> error "Codigo de articulo no existe"
                 else error "Cantidad no valida"
         _ -> error "Formato de linea de ingreso incorrecto."
 
@@ -52,15 +52,16 @@ mostrarLineasPorCodigo codigo ingresos = do
         [ingreso] -> mostrarIngreso ingreso
         _ -> putStrLn "Error: Codigo de ingreso duplicado."
 
-guardarIngreso :: Ingreso -> String -> IO ()
-guardarIngreso ingreso archivo= do
-    let json = encode ingreso
-        fileName = archivo
-    appendFile fileName (B.unpack json ++ "\n")
+guardarIngreso :: Ingreso -> IO ()
+guardarIngreso ingreso = do
+    ingresosExistentes <- cargarIngresosDesdeJSON
+    let ingresosActualizados = ingreso : ingresosExistentes
+    let json = encode ingresosActualizados
+    B.writeFile "app\\BasesDeDatos\\Ingresos.json" json
 
-cargarIngresosDesdeJSON :: FilePath -> IO [Ingreso]
-cargarIngresosDesdeJSON fileName = do
-    contenido <- readFile fileName
+cargarIngresosDesdeJSON :: IO [Ingreso]
+cargarIngresosDesdeJSON = do
+    contenido <- readFile "app\\BasesDeDatos\\Ingresos.json"
     let lineasIngresos = lines contenido
     return $ mapMaybe decodeIngreso lineasIngresos
 

@@ -172,7 +172,10 @@ data OrdenCompra = OrdenCompra { idOrden :: String
                                , nombreClienteOrden :: String
                                , fechaOrden :: String
                                , lineasCompra :: [LineaOrdenCompra]
-                               } deriving (Show)
+                               } deriving (Show, Generic)
+
+instance ToJSON OrdenCompra
+instance FromJSON OrdenCompra
 
 getIdOrdenCompra :: OrdenCompra -> String
 getIdOrdenCompra (OrdenCompra id _ _ _ _) = id
@@ -191,7 +194,10 @@ getLineasOrdenCompra (OrdenCompra _ _ _ _ lineas) = lineas
 
 data LineaOrdenCompra = LineaOrdenCompra { codigoLineaOrden :: String
                                          , cantidadLineaOrden :: Int
-                                         } deriving (Show)
+                                         } deriving (Show, Generic)
+
+instance ToJSON LineaOrdenCompra
+instance FromJSON LineaOrdenCompra
 
 getCodigoArticuloOrdenCompra :: LineaOrdenCompra -> String
 getCodigoArticuloOrdenCompra (LineaOrdenCompra codigoArticulo _) = codigoArticulo
