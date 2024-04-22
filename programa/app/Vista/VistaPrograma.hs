@@ -4,9 +4,11 @@ module Vista.VistaPrograma (
 
 import System.IO
 import Operaciones.CargarMostrarArticulos
+import Operaciones.Facturar
+import Datas.Data
 
-ejecutarMenuPrincipal :: IO ()
-ejecutarMenuPrincipal =
+ejecutarMenuPrincipal :: Empresa -> [Bodega] -> [Usuario] -> [Articulo] -> [OrdenCompra] -> [Factura] -> IO ()
+ejecutarMenuPrincipal empresa bodegas usuarios articulos ordenesCompra facturas =
     do
         imprimirMenuPrincipal
         opcion <- getLine
@@ -16,11 +18,11 @@ ejecutarMenuPrincipal =
                       articulos <- cargarArticulos ruta
                       putStrLn "Articulos cargados:"
                       mostrarArticulos articulos
-            "2" -> ejecutarMenuPrincipal
-            "3" -> ejecutarMenuPrincipal
-            "4" -> ejecutarMenuPrincipal
-            "5" -> ejecutarMenuPrincipal
-            "6" -> ejecutarMenuPrincipal
+            "2" -> ejecutarMenuPrincipal empresa bodegas usuarios articulos ordenesCompra facturas
+            "3" -> ejecutarMenuPrincipal empresa bodegas usuarios articulos ordenesCompra facturas 
+            "4" -> crearFactura bodegas articulos ordenesCompra facturas
+            "5" -> ejecutarMenuPrincipal empresa bodegas usuarios articulos ordenesCompra facturas 
+            "6" -> ejecutarMenuPrincipal empresa bodegas usuarios articulos ordenesCompra facturas 
             "7" -> putStrLn "\n\t***Hasta luego***"
             _   -> putStrLn "Opcion no invalida"
 

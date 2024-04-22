@@ -1,12 +1,17 @@
 module Operaciones.CargarMostrarArticulos(
     cargarArticulos,
     mostrarArticulos,
-    splitComa
+    splitComa,
+    guardarArticulosJSON,
+    cargarArticulosDesdeJSON
 ) where
+
 import System.IO
 import Data.Aeson
 import qualified Data.ByteString.Lazy as B
 import Datas.Data
+import System.FilePath ((</>))
+import System.Directory (getCurrentDirectory)
 
 cargarArticulos :: FilePath -> IO [Articulo]
 cargarArticulos nombre = do
@@ -30,15 +35,19 @@ splitComa (x:xs) = let (y:ys) = splitComa xs in (x:y) : ys
 mostrarArticulos :: [Articulo] -> IO ()
 mostrarArticulos articulos = mapM_ print articulos
 
-guardarArticulosJSON :: FilePath -> [Articulo] -> IO ()
-guardarArticulosJSON fileName articulos = do
+guardarArticulosJSON :: [Articulo] -> IO ()
+guardarArticulosJSON articulos = do
     let json = encode articulos
-    B.appendFile fileName (B.pack "\n")
-    B.appendFile fileName json
+    cwd <- getCurrentDirectory
+    let direccion = cwd </> "app/BasesDeDatos/Articulos.json"
+    B.writeFile direccion json
+    putStrLn "\nSe ha guardado los articulos"
 
-cargarArticulosDesdeJSON :: FilePath -> IO [Articulo]
-cargarArticulosDesdeJSON fileName = do
-    json <- B.readFile fileName
+cargarArticulosDesdeJSON :: IO [Articulo]
+cargarArticulosDesdeJSON  = do
+    cwd <- getCurrentDirectory
+    let direccion = cwd </> "app/BasesDeDatos/Articulos.json"
+    json <- B.readFile direccion
     case eitherDecode json of
-        Left err -> error $ "Error al decodificar el JSON: " ++ err
+        Left err -> error err
         Right articulos -> return articulos

@@ -1,24 +1,54 @@
 {-# LANGUAGE DeriveGeneric #-}
 
-module Datas.Data
-  ( Empresa(..)
-  , Bodega(..)
-  , Usuario(..)
-  , Articulo(..)
-  , Ingreso(..)
-  , OrdenCompra(..)
-  , getNombreEmpresa
-  , getSitioWeb
-  , getContacto
-  , getID
-  , getCapacidad
-  , getUbicacion
-  , getCedula
-  , getNombre
-  , getPrimerApellido
-  , getSegundoApellido
-  , getPuesto
-  ) where
+module Datas.Data (
+    Empresa(..),
+    getNombreEmpresa,
+    getSitioWeb,
+    getContacto,
+    Bodega(..),
+    getID,
+    getCapacidad,
+    getUbicacion,
+    getStock,
+    Usuario(..),
+    getCedula,
+    getNombre,
+    getPrimerApellido,
+    getSegundoApellido,
+    getPuesto,
+    Tipo(..),
+    TipoIVA(..),
+    Articulo(..),
+    Ingreso(..),
+    LineaIngreso(..),
+    OrdenCompra(..),
+    LineaOrdenCompra(..),
+    Factura(..),
+    ArticuloFactura(..),
+    getCodigoArticuloLineaIngreso,
+    getIdentificadorBodegaLineaIngreso,
+    getCantidadLineaIngreso,
+    getCodigoArticuloOrdenCompra,
+    getCantidadArticuloOrdenCompra,
+    getIdFactura,
+    getNombreEmpresaFactura,
+    getSitioWebEmpresaFactura,
+    getContactoEmpresaFactura,
+    getIdOrdenCompra,
+    getCedulaClienteFactura,
+    getNombreClienteFactura,
+    getEstadoFactura,
+    getFechaFactura,
+    getArticulosFactura,
+    getCodigoArticuloFactura,
+    getNombreArticuloFactura,
+    getCostoArticuloFactura,
+    getTipoArticuloFactura,
+    getTipoIVAArticuloFactura,
+    getCantidadArticulosFactura,
+    getSubTotalArticuloFactura,
+    getTotalArticuloFactura
+) where
 
 import GHC.Generics
 import Data.Aeson
@@ -45,7 +75,7 @@ getContacto (Empresa _ _ contacto) = contacto
 
 data Bodega = 
     Bodega {
-        id :: Int,
+        idBodega :: Int,
         capacidad :: Double,
         ubicacion :: !Text,
         stock :: [LineaIngreso]
@@ -103,11 +133,11 @@ data TipoIVA = REG | ESP deriving (Show, Read, Eq, Generic)
 instance FromJSON TipoIVA
 instance ToJSON TipoIVA
 
-data Articulo = Articulo { codigo :: String
-                         , nombre :: String
-                         , costo :: Double
-                         , tipo :: Tipo
-                         , tipoIVA :: TipoIVA
+data Articulo = Articulo { codigoArticulo :: String
+                         , nombreArticulo :: String
+                         , costoArticulo :: Double
+                         , tipoArticulo :: Tipo
+                         , tipoIVAArticulo :: TipoIVA
                          } deriving (Show, Eq, Generic)
 
 instance FromJSON Articulo
@@ -116,11 +146,11 @@ instance ToJSON Articulo
 data Ingreso = Ingreso { codigoIngreso :: String
                        , idUsuario :: String
                        , fecha :: String
-                       , lineas :: [LineaIngreso]
+                       , lineasIngreso :: [LineaIngreso]
                        } deriving (Show)
 
 
-data LineaIngreso = LineaIngreso { codigoArticulo :: String
+data LineaIngreso = LineaIngreso { codigoLineaIngreso :: String
                                  , identificadorBodega :: String
                                  , cantidad :: Int
                                  } deriving (Show, Generic)
@@ -138,10 +168,10 @@ getCantidadLineaIngreso :: LineaIngreso -> Int
 getCantidadLineaIngreso (LineaIngreso _ _ cantidad) = cantidad
 
 data OrdenCompra = OrdenCompra { idOrden :: String
-                               , cedulaCliente :: String
-                               , nombreCliente :: String
-                               , fecha :: String
-                               , lineas :: [LineaOrdenCompra]
+                               , cedulaClienteOrden :: String
+                               , nombreClienteOrden :: String
+                               , fechaOrden :: String
+                               , lineasCompra :: [LineaOrdenCompra]
                                } deriving (Show)
 
 getIdOrdenCompra :: OrdenCompra -> String
@@ -151,7 +181,7 @@ getCedulaClienteOrdenCompra :: OrdenCompra -> String
 getCedulaClienteOrdenCompra (OrdenCompra _ cedulaCliente _ _ _) = cedulaCliente
 
 getNombreClienteOrdenCompra :: OrdenCompra -> String
-getCompra (OrdenCompra _ _ nombreCliente _ _) = nombreCliente
+getNombreClienteOrdenCompra (OrdenCompra _ _ nombreCliente _ _) = nombreCliente
 
 getFechaOrdenCompra :: OrdenCompra -> String
 getFechaOrdenCompra (OrdenCompra _ _ _ fecha _) = fecha
@@ -159,8 +189,8 @@ getFechaOrdenCompra (OrdenCompra _ _ _ fecha _) = fecha
 getLineasOrdenCompra :: OrdenCompra -> [LineaOrdenCompra]
 getLineasOrdenCompra (OrdenCompra _ _ _ _ lineas) = lineas
 
-data LineaOrdenCompra = LineaOrdenCompra { codigoArticulo :: String
-                                         , cantidad :: Int
+data LineaOrdenCompra = LineaOrdenCompra { codigoLineaOrden :: String
+                                         , cantidadLineaOrden :: Int
                                          } deriving (Show)
 
 getCodigoArticuloOrdenCompra :: LineaOrdenCompra -> String
@@ -171,16 +201,16 @@ getCantidadArticuloOrdenCompra (LineaOrdenCompra _ cantidad) = cantidad
 
 data Factura =
     Factura{
-        id :: !Text,
-        nombreEmpresa :: !Text,
-        sitioWebEmpresa :: !Text,
-        contactoEmpresa :: !Text,
-        cedulaCliente :: Int,
-        nombreCliente :: !Text,
-        estado :: !Text,
-        fecha :: UTCTime,
-        articulos :: [ArticuloFactura]
-    }
+        idFactura :: !Text,
+        nombreEmpresaFactura :: !Text,
+        sitioWebEmpresaFactura:: !Text,
+        contactoEmpresaFactura :: !Text,
+        cedulaClienteFactura :: Int,
+        nombreClienteFactura :: !Text,
+        estadoFactura :: !Text,
+        fechaFactura :: UTCTime,
+        articulosFactura :: [ArticuloFactura]
+    } deriving(Generic, Show)
 
 instance FromJSON Factura
 instance ToJSON Factura
@@ -214,14 +244,14 @@ getArticulosFactura (Factura _ _ _ _ _ _ _ _ articulos) = articulos
 
 data ArticuloFactura =
     ArticuloFactura{
-        codigo :: !Text,
-        nombre :: !Text,
-        costo :: Double,
-        tipo :: Tipo,
-        tipoIVA :: TipoIVA,
-        cantidad :: Int,
-        subTotal :: Double,
-        total :: Double
+        codigoArticuloFactura :: !Text,
+        nombreArticuloFactura :: !Text,
+        costoArticuloFactura :: Double,
+        tipoArticuloFactura :: Tipo,
+        tipoIVAArticuloFactura :: TipoIVA,
+        cantidadArticuloFactura :: Int,
+        subTotalArticuloFactura :: Double,
+        totalArticuloFactura :: Double
     } deriving (Show, Generic)
 
 instance FromJSON ArticuloFactura
@@ -234,10 +264,10 @@ getNombreArticuloFactura :: ArticuloFactura -> Text
 getNombreArticuloFactura (ArticuloFactura _ nombre _ _ _ _ _ _) = nombre
 
 getCostoArticuloFactura :: ArticuloFactura -> Double
-getCostoArticuloFactura (Articulo _ _ costo _ _ _ _ _) = costo
+getCostoArticuloFactura (ArticuloFactura _ _ costo _ _ _ _ _) = costo
 
 getTipoArticuloFactura :: ArticuloFactura -> Tipo
-getTipoArticuloFactura (ArticuloFactura _ _ _ tipo _ _ _) = Tipo
+getTipoArticuloFactura (ArticuloFactura _ _ _ tipo _ _ _ _) = tipo
 
 getTipoIVAArticuloFactura :: ArticuloFactura -> TipoIVA
 getTipoIVAArticuloFactura (ArticuloFactura _ _ _ _ tipoIVA _ _ _) = tipoIVA

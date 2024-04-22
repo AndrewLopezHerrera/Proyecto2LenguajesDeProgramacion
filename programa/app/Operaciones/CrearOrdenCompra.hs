@@ -1,5 +1,7 @@
 module Operaciones.CrearOrdenCompra (
-    crearOrdenCompra
+    crearOrdenCompra,
+    guardarOrdenCompraJSON,
+    cargarOrdenesDesdeJSON
 ) where
 
 import Data.Aeson
@@ -9,6 +11,8 @@ import Datas.Data
 import Data.Time.Clock (getCurrentTime)
 import Data.Time.Format (formatTime, defaultTimeLocale)
 import System.IO
+import System.FilePath ((</>))
+import System.Directory (getCurrentDirectory)
 
 crearOrdenCompra :: IO OrdenCompra
 crearOrdenCompra = do
@@ -39,15 +43,17 @@ guardarOrdenCompraJSON fileName ordenCompra = do
     B.appendFile fileName (B.pack "\n")
     B.appendFile fileName json
 
-cargarOrdenesDesdeJSON :: FilePath -> IO [OrdenCompra]
-cargarOrdenesDesdeJSON fileName = do
-    json <- B.readFile fileName
-    case traverse decode (B.lines json) of
-        Nothing -> error "Error al decodificar JSON."
-        Just ordenes -> return ordenes
+cargarOrdenesDesdeJSON :: IO [OrdenCompra]
+cargarOrdenesDesdeJSON = do
+    cwd <- getCurrentDirectory
+    let direccion = cwd </> "app/BasesDeDatos/OrdenesCompra.json"
+    json <- B.readFile direccion
+    case eitherDecode json of
+        Left err -> error err
+        Right ordenes -> return ordenes
 
 eliminarOrdenPorId :: FilePath -> String -> IO ()
 eliminarOrdenPorId fileName idOrdenEliminar = do
-    ordenes <- cargarOrdenesDesdeJSON fileName
+    ordenes <- cargarOrdenesDesdeJSON
     let ordenesActualizadas = filter (\orden -> idOrden orden /= idOrdenEliminar) ordenes
     B.writeFile fileName (encode ordenesActualizadas)

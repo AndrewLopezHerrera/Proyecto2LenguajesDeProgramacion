@@ -1,3 +1,20 @@
+module Operaciones.Facturar
+  ( cargarFacturas,
+    guardarFacturas,
+    crearFactura,
+  )
+where
+
+import Data.Aeson
+import qualified Data.ByteString.Lazy as B
+import Data.Text (Text, pack, unpack)
+import Datas.Data
+import GHC.Generics
+import System.Directory (getCurrentDirectory)
+import System.FilePath ((</>))
+import System.IO
+import Text.Read (readMaybe)
+
 cargarFacturas :: IO [Factura]
 cargarFacturas = do
   cwd <- getCurrentDirectory
@@ -16,8 +33,8 @@ guardarFacturas facturas = do
   B.writeFile direccion json
   putStrLn "\nSe ha guardado la factura"
 
-crearFactura :: [OrdenCompra] -> [Factura] -> IO ()
-crearFactura ordenesCompra facturas = do
+crearFactura :: [Bodega] -> [Articulo] -> [OrdenCompra] -> [Factura] -> IO ()
+crearFactura bodegas articulos ordenesCompra facturas = do
   putStrLn "\t\tFacturación de Ordenes de Compra\n"
   putStr "Escriba el código de la orden de compra a facturar: "
   hFlush stdout
@@ -31,27 +48,26 @@ crearFactura ordenesCompra facturas = do
       let ordenCompra = verificarExistenciaOrdenCompra ordenesCompra idOrdenCompra 0
        in if length ordenCompra == 0
             then
-              putStrLn ("\nNo existe la orden de compra con el código " ++ idOrdenCompra)
+              putStrLn ("\nNo existe la orden de compra con el código " ++ unpack idOrdenCompra)
             else
-                let
-                    objetoOrdenCompra = ordenCompra !! 0
-                    putStrLn ("Se ha creado la factura")
+              let objetoOrdenCompra = ordenCompra !! 0
+               in putStrLn "Se ha creado la factura"
 
-verificarExistenciaFactura :: [Factura] -> Text -> Integer -> Bool
+verificarExistenciaFactura :: [Factura] -> Text -> Int -> Bool
 verificarExistenciaFactura facturas idFactura indice =
   if length facturas == 0 || length facturas == indice
     then
-      false
+      False
     else
       let factura = facturas !! indice
           idFacturaGuardada = getIdFactura (factura)
-       in if idFacturaGuardada == idFactura
-            then
-              true
-            else
-              verificarExistenciaFactura facturas idFactura (indice + 1)
+      in if idFacturaGuardada == idFactura
+        then
+          True
+        else
+          verificarExistenciaFactura facturas idFactura (indice + 1)
 
-verificarExistenciaOrdenCompra :: [OrdenCompra] -> Text -> Integer -> [OrdenCompra]
+verificarExistenciaOrdenCompra :: [OrdenCompra] -> Text -> Int -> [OrdenCompra]
 verificarExistenciaOrdenCompra ordenesCompra idOrdenCompra indice =
   if length ordenesCompra == 0 || length ordenesCompra == indice
     then
@@ -60,8 +76,8 @@ verificarExistenciaOrdenCompra ordenesCompra idOrdenCompra indice =
       let ordenCompra = ordenesCompra !! indice
           idOrdenCompraString = getIdOrdenCompra (ordenCompra)
           idOrdenCompraGuardado = pack idOrdenCompraString
-       in if idOrdenCompraGuardado == idOrdenCompra
-            then
-              [ordenCompra]
-            else
-              verificarExistenciaOrdenCompra ordenesCompra idOrdenCompra (indice + 1)
+      in if idOrdenCompraGuardado == idOrdenCompra
+        then
+          [ordenCompra]
+        else
+          verificarExistenciaOrdenCompra ordenesCompra idOrdenCompra (indice + 1)

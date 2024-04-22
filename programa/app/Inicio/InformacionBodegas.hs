@@ -46,7 +46,7 @@ crearBodegas idActual = do
         ioUbicacion <- getLine
         let ubicacion :: Text
             ubicacion = pack ioUbicacion
-        let bodegaNueva = Bodega idActual capacidad ubicacion
+        let bodegaNueva = Bodega idActual capacidad ubicacion []
         if idActual >= 5 then do
             putStr "Desea crear una bodega más? Si(S) No(Cualquier otra letra): "
             hFlush stdout
