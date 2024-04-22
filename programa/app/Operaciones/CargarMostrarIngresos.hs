@@ -1,22 +1,23 @@
 module Operaciones.CargarMostrarIngresos(
     cargarIngreso,
     mostrarIngreso,
-    actualizarStock
+    actualizarBodegas,
+    guardarIngreso,
+    consultarIngresoPorCodigo
 ) where
 
-import Operaciones.CargarMostrarArticulos (splitComa)
-import System.IO
+import Data.Aeson
+import qualified Data.ByteString.Lazy as B
+import Data.Maybe (fromMaybe, mapMaybe)
 import Datas.Data
 import Data.Time.Clock (getCurrentTime)
 import Data.Time.Format (formatTime, defaultTimeLocale)
-
-rutaBase :: FilePath
-rutaBase = "./Archivos/"
+import System.IO
 
 cargarIngreso :: String -> String -> [String] -> [String] -> IO Ingreso
 cargarIngreso idUsuario fileName articulosExistentes bodegasExistentes = do
     tiempo <- fmap (formatTime defaultTimeLocale "%Y%m%d%H%M%S") getCurrentTime
-    contenido <- readFile (rutaBase ++ fileName)
+    contenido <- readFile fileName
     let lineasIngreso = map (parseLineaIngreso articulosExistentes bodegasExistentes) (lines contenido)
     return $ Ingreso (idUsuario ++ "_" ++ tiempo) idUsuario tiempo lineasIngreso
 
@@ -51,3 +52,22 @@ mostrarLineasPorCodigo codigo ingresos = do
         [ingreso] -> mostrarIngreso ingreso
         _ -> putStrLn "Error: Codigo de ingreso duplicado."
 
+guardarIngreso :: Ingreso -> String -> IO ()
+guardarIngreso ingreso archivo= do
+    let json = encode ingreso
+        fileName = archivo
+    appendFile fileName (B.unpack json ++ "\n")
+
+cargarIngresosDesdeJSON :: FilePath -> IO [Ingreso]
+cargarIngresosDesdeJSON fileName = do
+    contenido <- readFile fileName
+    let lineasIngresos = lines contenido
+    return $ mapMaybe decodeIngreso lineasIngresos
+
+decodeIngreso :: String -> Maybe Ingreso
+decodeIngreso str = decode (B.pack $ fromMaybe "" str)
+
+consultarIngresoPorCodigo :: String -> IO ()
+consultarIngresoPorCodigo codigo = do
+    ingresos <- cargarIngresosDesdeJSON "./Archivos/Ingresos.json"
+    mostrarLineasPorCodigo codigo ingresos

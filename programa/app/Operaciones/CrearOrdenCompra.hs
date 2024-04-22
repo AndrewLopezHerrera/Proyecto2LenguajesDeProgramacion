@@ -2,10 +2,13 @@ module Operaciones.CrearOrdenCompra (
     crearOrdenCompra
 ) where
 
-import System.IO
+import Data.Aeson
+import qualified Data.ByteString.Lazy as B
+import Data.List (delete)
 import Datas.Data
 import Data.Time.Clock (getCurrentTime)
 import Data.Time.Format (formatTime, defaultTimeLocale)
+import System.IO
 
 crearOrdenCompra :: IO OrdenCompra
 crearOrdenCompra = do
@@ -29,3 +32,22 @@ ingresarLineasOrdenCompra lineasPrevias = do
             cantidad <- readLn :: IO Int
             lineas <- ingresarLineasOrdenCompra (LineaOrdenCompra codigo cantidad : lineasPrevias)
             return lineas
+
+guardarOrdenCompraJSON :: FilePath -> OrdenCompra -> IO ()
+guardarOrdenCompraJSON fileName ordenCompra = do
+    let json = encode ordenCompra
+    B.appendFile fileName (B.pack "\n")
+    B.appendFile fileName json
+
+cargarOrdenesDesdeJSON :: FilePath -> IO [OrdenCompra]
+cargarOrdenesDesdeJSON fileName = do
+    json <- B.readFile fileName
+    case traverse decode (B.lines json) of
+        Nothing -> error "Error al decodificar JSON."
+        Just ordenes -> return ordenes
+
+eliminarOrdenPorId :: FilePath -> String -> IO ()
+eliminarOrdenPorId fileName idOrdenEliminar = do
+    ordenes <- cargarOrdenesDesdeJSON fileName
+    let ordenesActualizadas = filter (\orden -> idOrden orden /= idOrdenEliminar) ordenes
+    B.writeFile fileName (encode ordenesActualizadas)
