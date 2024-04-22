@@ -3,7 +3,9 @@ module Operaciones.CargarMostrarArticulos(
     mostrarArticulos,
     splitComa,
     guardarArticulosJSON,
-    cargarArticulosDesdeJSON
+    cargarArticulosDesdeJSON,
+    agregarArticulos,
+    findArticulo
 ) where
 
 import System.IO
@@ -39,15 +41,27 @@ guardarArticulosJSON :: [Articulo] -> IO ()
 guardarArticulosJSON articulos = do
     let json = encode articulos
     cwd <- getCurrentDirectory
-    let direccion = cwd </> "app/BasesDeDatos/Articulos.json"
+    let direccion = cwd </> "app\\BasesDeDatos\\Articulos.json"
     B.writeFile direccion json
     putStrLn "\nSe ha guardado los articulos"
 
 cargarArticulosDesdeJSON :: IO [Articulo]
 cargarArticulosDesdeJSON  = do
     cwd <- getCurrentDirectory
-    let direccion = cwd </> "app/BasesDeDatos/Articulos.json"
+    let direccion = cwd </> "app\\BasesDeDatos\\Articulos.json"
     json <- B.readFile direccion
     case eitherDecode json of
         Left err -> error err
         Right articulos -> return articulos
+
+agregarArticulos :: [Articulo] -> IO ()
+agregarArticulos nuevosArticulos = do
+    articulosExistentes <- cargarArticulosDesdeJSON
+    let articulosActualizados = articulosExistentes ++ nuevosArticulos
+    guardarArticulosJSON articulosActualizados
+
+findArticulo :: String -> [Articulo] -> Maybe Articulo
+findArticulo codigo [] = Nothing
+findArticulo codigo (articulo:resto)
+    | codigoArticulo articulo == codigo = Just articulo
+    | otherwise = findArticulo codigo resto

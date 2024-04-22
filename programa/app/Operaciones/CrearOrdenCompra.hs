@@ -1,10 +1,16 @@
+{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE OverloadedStrings #-}
+
 module Operaciones.CrearOrdenCompra (
     crearOrdenCompra,
     guardarOrdenCompraJSON,
-    cargarOrdenesDesdeJSON
+    cargarOrdenesDesdeJSON,
+    eliminarOrdenPorId
 ) where
 
+import GHC.Generics
 import Data.Aeson
+import Data.Aeson.TH
 import qualified Data.ByteString.Lazy as B
 import Data.List (delete)
 import Datas.Data
@@ -37,22 +43,30 @@ ingresarLineasOrdenCompra lineasPrevias = do
             lineas <- ingresarLineasOrdenCompra (LineaOrdenCompra codigo cantidad : lineasPrevias)
             return lineas
 
+<<<<<<< HEAD
 guardarOrdenCompraJSON :: FilePath -> OrdenCompra -> IO ()
 guardarOrdenCompraJSON fileName ordenCompra = do
     let json = encode ordenCompra
     B.appendFile fileName json
+=======
+guardarOrdenCompraJSON :: OrdenCompra -> IO ()
+guardarOrdenCompraJSON nuevaOrdenCompra = do
+    ordenesAnteriores <- cargarOrdenesDesdeJSON
+    let ordenesActualizadas = nuevaOrdenCompra : ordenesAnteriores
+    B.writeFile "app\\BasesDeDatos\\OrdenesCompra.json" (encode ordenesActualizadas)
+>>>>>>> 4663f9a020c7d219ebe210ae6e701d85486858dd
 
 cargarOrdenesDesdeJSON :: IO [OrdenCompra]
 cargarOrdenesDesdeJSON = do
     cwd <- getCurrentDirectory
-    let direccion = cwd </> "app/BasesDeDatos/OrdenesCompra.json"
+    let direccion = cwd </> "app\\BasesDeDatos\\OrdenesCompra.json"
     json <- B.readFile direccion
     case eitherDecode json of
         Left err -> error err
         Right ordenes -> return ordenes
 
-eliminarOrdenPorId :: FilePath -> String -> IO ()
-eliminarOrdenPorId fileName idOrdenEliminar = do
+eliminarOrdenPorId :: String -> IO ()
+eliminarOrdenPorId idOrdenEliminar = do
     ordenes <- cargarOrdenesDesdeJSON
     let ordenesActualizadas = filter (\orden -> idOrden orden /= idOrdenEliminar) ordenes
-    B.writeFile fileName (encode ordenesActualizadas)
+    B.writeFile "app\\BasesDeDatos\\OrdenesCompra.json" (encode ordenesActualizadas)

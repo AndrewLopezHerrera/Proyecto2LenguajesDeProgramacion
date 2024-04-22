@@ -1,5 +1,6 @@
 module Inicio.InformacionBodegas(
-    cargarDatosBodega
+    cargarDatosBodega,
+    findBodega
 ) where
 
 import Data.Aeson
@@ -75,3 +76,9 @@ readJSONFileBusiness direccion = do
     case eitherDecode json of
         Left err -> error err
         Right bodegas -> return bodegas
+
+findBodega :: Int -> [Bodega] -> Maybe Bodega
+findBodega objetivo [] = Nothing
+findBodega objetivo (bodega:resto)
+    | idBodega bodega == objetivo = Just bodega
+    | otherwise = findBodega objetivo resto
