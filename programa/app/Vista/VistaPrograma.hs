@@ -7,7 +7,7 @@ import Operaciones.CargarMostrarArticulos
 import Operaciones.Facturar
 import Datas.Data
 
-ejecutarMenuPrincipal :: Empresa -> [Bodega] -> [Usuario] -> [Articulo] -> [OrdenCompra] -> [Factura] -> IO ()
+ejecutarMenuPrincipal :: Empresa -> [Bodega] -> [Usuario] -> [Articulo] -> [OrdenCompra] -> [Factura] IO ()
 ejecutarMenuPrincipal empresa bodegas usuarios articulos ordenesCompra facturas =
     do
         imprimirMenuPrincipal

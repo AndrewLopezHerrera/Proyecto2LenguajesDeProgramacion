@@ -60,7 +60,7 @@ verificarExistenciaFactura facturas idFactura indice =
       False
     else
       let factura = facturas !! indice
-          idFacturaGuardada = getIdFactura (factura)
+          idFacturaGuardada = getIdFactura factura
       in if idFacturaGuardada == idFactura
         then
           True

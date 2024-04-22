@@ -40,7 +40,6 @@ ingresarLineasOrdenCompra lineasPrevias = do
 guardarOrdenCompraJSON :: FilePath -> OrdenCompra -> IO ()
 guardarOrdenCompraJSON fileName ordenCompra = do
     let json = encode ordenCompra
-    B.appendFile fileName (B.pack "\n")
     B.appendFile fileName json
 
 cargarOrdenesDesdeJSON :: IO [OrdenCompra]
