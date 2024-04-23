@@ -14,28 +14,39 @@ import Data.Time.Clock (getCurrentTime)
 import Data.Time.Format (formatTime, defaultTimeLocale)
 import System.IO
 
-cargarIngreso :: String -> String -> [Articulo] -> [Bodega] -> IO Ingreso
-cargarIngreso idUsuario fileName articulosExistentes bodegasExistentes = do
-    tiempo <- fmap (formatTime defaultTimeLocale "%Y%m%d%H%M%S") getCurrentTime
-    contenido <- readFile fileName
-    let lineasIngreso = map (parseLineaIngreso articulosExistentes bodegasExistentes) (lines contenido)
-    return $ Ingreso (idUsuario ++ "_" ++ tiempo) idUsuario tiempo lineasIngreso
+cargarIngreso :: String -> String -> [Articulo] -> [Bodega] -> [Usuario] -> IO (Maybe Ingreso)
+cargarIngreso idUsuario fileName articulosExistentes bodegasExistentes usuarios = do
+    let maybeUsuario = find (\usuario -> getCedula usuario == idUsuario) usuarios
+    case maybeUsuario of
+        Just _ -> do
+            tiempo <- fmap (formatTime defaultTimeLocale "%Y%m%d%H%M%S") getCurrentTime
+            contenido <- readFile fileName
+            let lineasIngreso = map (parseLineaIngreso articulosExistentes bodegasExistentes) (lines contenido)
+            return $ Just $ Ingreso (idUsuario ++ "_" ++ tiempo) idUsuario tiempo lineasIngreso
+        Nothing -> do
+            putStrLn "El idUsuario especificado no existe."
+            return Nothing
 
 parseLineaIngreso :: [Articulo] -> [Bodega] -> String -> LineaIngreso
 parseLineaIngreso articulosExistentes bodegasExistentes linea =
     case splitComa linea of
         [cod, id, cant] ->
-            if cantidadValida (read cant :: String)
+            if cantidadValida (read cant :: Int)
                 then case findArticulo cod articulosExistentes of
                          Just articulo -> case findBodega (read id :: Int) bodegasExistentes of
-                                               Just bodega -> LineaIngreso (codigoArticulo articulo) (idBodega bodega) (read cant :: Int)
+                                               Just bodega -> if cantidadDisponibleValida (read cant :: Int) bodega
+                                                                  then LineaIngreso (codigoArticulo articulo) (idBodega bodega) (read cant :: Int)
+                                                                  else error "La cantidad ingresada sobrepasa la capacidad de la bodega"
                                                Nothing -> error "Identificador de bodega no existe"
-                         Nothing -> error "Codigo de articulo no existe"
-                else error "Cantidad no valida"
-        _ -> error "Formato de linea de ingreso incorrecto."
+                         Nothing -> error "Código de artículo no existe"
+                else error "Cantidad no válida"
+        _ -> error "Formato de línea de ingreso incorrecto."
 
 cantidadValida :: Int -> Bool
 cantidadValida cant = cant > 0
+
+cantidadDisponibleValida :: Int -> Bodega -> Bool
+cantidadDisponibleValida cant bodega = cant <= sum (map getCantidadLineaIngreso (stock bodega))
 
 mostrarIngreso :: Ingreso -> IO ()
 mostrarIngreso ingreso = do
@@ -70,5 +81,5 @@ decodeIngreso str = decode (B.pack $ fromMaybe "" str)
 
 consultarIngresoPorCodigo :: String -> IO ()
 consultarIngresoPorCodigo codigo = do
-    ingresos <- cargarIngresosDesdeJSON "./Archivos/Ingresos.json"
+    ingresos <- cargarIngresosDesdeJSON
     mostrarLineasPorCodigo codigo ingresos

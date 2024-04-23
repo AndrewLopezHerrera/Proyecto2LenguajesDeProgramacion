@@ -40,8 +40,7 @@ ingresarLineasOrdenCompra lineasPrevias = do
         else do
             putStrLn "Ingrese la cantidad:"
             cantidad <- readLn :: IO Int
-            lineas <- ingresarLineasOrdenCompra (LineaOrdenCompra codigo cantidad : lineasPrevias)
-            return lineas
+            ingresarLineasOrdenCompra (LineaOrdenCompra codigo cantidad : lineasPrevias)
 
 guardarOrdenCompraJSON :: OrdenCompra -> IO ()
 guardarOrdenCompraJSON nuevaOrdenCompra = do

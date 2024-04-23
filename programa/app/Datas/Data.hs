@@ -207,82 +207,83 @@ getCantidadArticuloOrdenCompra (LineaOrdenCompra _ cantidad) = cantidad
 
 data Factura =
     Factura{
-        idFactura :: !Text,
-        nombreEmpresaFactura :: !Text,
-        sitioWebEmpresaFactura:: !Text,
-        contactoEmpresaFactura :: !Text,
-        cedulaClienteFactura :: Int,
-        nombreClienteFactura :: !Text,
-        estadoFactura :: !Text,
-        fechaFactura :: UTCTime,
-        articulosFactura :: [ArticuloFactura]
+        idFactura :: String,
+        clienteFactura :: Usuario,
+        empresaFactura :: Empresa,
+        estadoFactura :: String,
+        fechaHoraFactura :: String,
+        lineasFactura :: [ArticuloFactura],
+        subtotalFactura :: Double,
+        totalFactura :: Double
     } deriving(Generic, Show)
 
 instance FromJSON Factura
 instance ToJSON Factura
 
-getIdFactura :: Factura -> Text
-getIdFactura(Factura id _ _ _ _ _ _ _ _) = id
-
 getNombreEmpresaFactura :: Factura -> Text
-getNombreEmpresaFactura (Factura _ nombreEmpresa _ _ _ _ _ _ _) = nombreEmpresa
+getNombreEmpresaFactura factura = getNombreEmpresa (empresaFactura factura)
 
 getSitioWebEmpresaFactura :: Factura -> Text
-getSitioWebEmpresaFactura (Factura _ _ sitioWebEmpresa _ _ _ _ _ _) = sitioWebEmpresa
+getSitioWebEmpresaFactura factura = getSitioWeb (empresaFactura factura)
 
 getContactoEmpresaFactura :: Factura -> Text
-getContactoEmpresaFactura (Factura _ _ _ contactoEmpresa _ _ _ _ _) = contactoEmpresa
+getContactoEmpresaFactura factura = getContacto (empresaFactura factura)
+
+getIdFactura :: Factura -> String
+getIdFactura = idFactura
 
 getCedulaClienteFactura :: Factura -> Int
-getCedulaClienteFactura (Factura _ _ _ _ cedulaCliente _ _ _ _) = cedulaCliente
+getCedulaClienteFactura = getCedula . clienteFactura
 
 getNombreClienteFactura :: Factura -> Text
-getNombreClienteFactura (Factura _ _ _ _ _ nombreCliente _ _ _) = nombreCliente
+getNombreClienteFactura = getNombre . clienteFactura
 
-getEstadoFactura :: Factura -> Text
-getEstadoFactura (Factura _ _ _ _ _ _ estado _ _) = estado
+getEstadoFactura :: Factura -> String
+getEstadoFactura = estadoFactura
 
-getFechaFactura :: Factura -> UTCTime
-getFechaFactura  (Factura _ _ _ _ _ _ _ fecha _) = fecha
+getFechaFactura :: Factura -> String
+getFechaFactura = fechaHoraFactura
 
 getArticulosFactura :: Factura -> [ArticuloFactura]
-getArticulosFactura (Factura _ _ _ _ _ _ _ _ articulos) = articulos
+getArticulosFactura = lineasFactura
 
 data ArticuloFactura =
     ArticuloFactura{
-        codigoArticuloFactura :: !Text,
-        nombreArticuloFactura :: !Text,
+        codigoArticuloFactura :: String,
+        nombreArticuloFactura :: String,
+        cantidadArticuloFactura :: Int,
         costoArticuloFactura :: Double,
         tipoArticuloFactura :: Tipo,
         tipoIVAArticuloFactura :: TipoIVA,
-        cantidadArticuloFactura :: Int,
-        subTotalArticuloFactura :: Double,
-        totalArticuloFactura :: Double
+        subTotalArticuloFactura :: Double
     } deriving (Show, Generic)
 
 instance FromJSON ArticuloFactura
 instance ToJSON ArticuloFactura
 
-getCodigoArticuloFactura :: ArticuloFactura -> Text
-getCodigoArticuloFactura (ArticuloFactura codigoArticulo _ _ _ _ _ _ _) = codigoArticulo
+getCodigoArticuloFactura :: ArticuloFactura -> String
+getCodigoArticuloFactura = codigoArticuloFactura
 
-getNombreArticuloFactura :: ArticuloFactura -> Text
-getNombreArticuloFactura (ArticuloFactura _ nombre _ _ _ _ _ _) = nombre
+getNombreArticuloFactura :: ArticuloFactura -> String
+getNombreArticuloFactura = nombreArticuloFactura
 
 getCostoArticuloFactura :: ArticuloFactura -> Double
-getCostoArticuloFactura (ArticuloFactura _ _ costo _ _ _ _ _) = costo
+getCostoArticuloFactura = costoArticuloFactura
 
 getTipoArticuloFactura :: ArticuloFactura -> Tipo
-getTipoArticuloFactura (ArticuloFactura _ _ _ tipo _ _ _ _) = tipo
+getTipoArticuloFactura = tipoArticuloFactura
 
 getTipoIVAArticuloFactura :: ArticuloFactura -> TipoIVA
-getTipoIVAArticuloFactura (ArticuloFactura _ _ _ _ tipoIVA _ _ _) = tipoIVA
+getTipoIVAArticuloFactura = tipoIVAArticuloFactura
 
-getCantidadArticulosFactura ::  ArticuloFactura -> Int
-getCantidadArticulosFactura (ArticuloFactura _ _ _ _ _ cantidad _ _) = cantidad
+getIntArticulosFactura :: ArticuloFactura -> Int
+getCantidadArticulosFactura = cantidadArticuloFactura
 
 getSubTotalArticuloFactura :: ArticuloFactura -> Double
-getSubTotalArticuloFactura (ArticuloFactura _ _ _ _ _ _ subTotal _) = subTotal
+getSubTotalArticuloFactura = subTotalArticuloFactura
 
 getTotalArticuloFactura :: ArticuloFactura -> Double
-getTotalArticuloFactura (ArticuloFactura _ _ _ _ _ _ _ total) = total
+getTotalArticuloFactura articulo = subTotalArticuloFactura articulo * (1 + porcentajeIVA)
+    where porcentajeIVA = case tipoIVAArticuloFactura articulo of
+            REG -> 0.13
+            ESP -> 0.04

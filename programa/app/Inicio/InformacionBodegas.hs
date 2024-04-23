@@ -19,7 +19,7 @@ cargarDatosBodega =
         cwd <- getCurrentDirectory
         let direccion = cwd </> "app\\BasesDeDatos\\Bodegas.json"
         bodegas <- readJSONFileBusiness direccion
-        if length bodegas == 0 then do
+        if null bodegas then do
             bodegasNuevas <- crearBodegas 1
             guardarBodegas bodegasNuevas
             return bodegasNuevas

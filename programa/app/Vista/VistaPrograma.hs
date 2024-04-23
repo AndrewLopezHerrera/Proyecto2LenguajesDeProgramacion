@@ -3,13 +3,23 @@ module Vista.VistaPrograma (
 ) where
 
 import System.IO
+import Inicio.InformacionComercial
+import Inicio.InformacionBodegas
+import Inicio.InformacionUsuarios
+import Operaciones.CrearOrdenCompra
 import Operaciones.CargarMostrarArticulos
 import Operaciones.Facturar
 import Datas.Data
 
-ejecutarMenuPrincipal :: Empresa -> [Bodega] -> [Usuario] -> [Articulo] -> [OrdenCompra] -> [Factura] IO ()
-ejecutarMenuPrincipal empresa bodegas usuarios articulos ordenesCompra facturas =
+ejecutarMenuPrincipal :: IO ()
+ejecutarMenuPrincipal =
     do
+        empresa <- cargarDatosEmpresa
+        bodegas <- cargarDatosBodega
+        usuarios <- cargarDatosUsuarios
+        articulos <- cargarArticulosDesdeJSON
+        ordenesCompra <- cargarOrdenesDesdeJSON
+        facturas <- cargarFacturas
         imprimirMenuPrincipal
         opcion <- getLine
         case opcion of
@@ -18,11 +28,18 @@ ejecutarMenuPrincipal empresa bodegas usuarios articulos ordenesCompra facturas 
                       articulos <- cargarArticulos ruta
                       putStrLn "Articulos cargados:"
                       mostrarArticulos articulos
-            "2" -> ejecutarMenuPrincipal empresa bodegas usuarios articulos ordenesCompra facturas
-            "3" -> ejecutarMenuPrincipal empresa bodegas usuarios articulos ordenesCompra facturas 
-            "4" -> crearFactura bodegas articulos ordenesCompra facturas
-            "5" -> ejecutarMenuPrincipal empresa bodegas usuarios articulos ordenesCompra facturas 
-            "6" -> ejecutarMenuPrincipal empresa bodegas usuarios articulos ordenesCompra facturas 
+            "2" -> do putStrLn "Ingrese la ruta del archivo de ingreso:"
+                      ruta <- getLine
+                      putStrLn "Ingrese la usuario que realiza ingreso:"
+                      user <- getLine
+                      ingreso <- cargarIngreso user ruta articulos bodegas usuarios
+                      putStrLn "Ingreso cargado:"
+                      mostrarIngreso ingreso
+            "3" -> do orden <- crearOrdenCompra
+                      guardarOrdenCompraJSON orden
+            "4" -> facturarOrdenCompra ordenesCompra bodegas empresa
+            "5" -> verStockBodegas
+            "6" -> ejecutarMenuOpcionesGenerales bodegas facturas ordenesCompra articulos
             "7" -> putStrLn "\n\t***Hasta luego***"
             _   -> putStrLn "Opcion no invalida"
 
