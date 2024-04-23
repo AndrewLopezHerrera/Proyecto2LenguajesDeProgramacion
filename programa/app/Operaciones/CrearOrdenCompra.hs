@@ -43,18 +43,11 @@ ingresarLineasOrdenCompra lineasPrevias = do
             lineas <- ingresarLineasOrdenCompra (LineaOrdenCompra codigo cantidad : lineasPrevias)
             return lineas
 
-<<<<<<< HEAD
-guardarOrdenCompraJSON :: FilePath -> OrdenCompra -> IO ()
-guardarOrdenCompraJSON fileName ordenCompra = do
-    let json = encode ordenCompra
-    B.appendFile fileName json
-=======
 guardarOrdenCompraJSON :: OrdenCompra -> IO ()
 guardarOrdenCompraJSON nuevaOrdenCompra = do
     ordenesAnteriores <- cargarOrdenesDesdeJSON
     let ordenesActualizadas = nuevaOrdenCompra : ordenesAnteriores
     B.writeFile "app\\BasesDeDatos\\OrdenesCompra.json" (encode ordenesActualizadas)
->>>>>>> 4663f9a020c7d219ebe210ae6e701d85486858dd
 
 cargarOrdenesDesdeJSON :: IO [OrdenCompra]
 cargarOrdenesDesdeJSON = do
