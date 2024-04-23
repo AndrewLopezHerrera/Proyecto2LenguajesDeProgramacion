@@ -1,3 +1,9 @@
+module Operaciones.OpcionesGenerales
+  ()
+where
+
+import Inicio.InformacionBodegas
+
 ejecutarMenuOpcionesGenerales :: [Bodega] -> [Factura] -> [OrdenCompra] -> [Articulos] -> IO ()
 ejecutarMenuOpcionesGenerales bodegas facturas ordenesCompra articulos = do
     imprimirMenuOpcionesGenerales
@@ -142,3 +148,32 @@ buscarOrdenCompra idOrdenCompra ordenesCompra indice =
                 [ordenCompra]
             else
                 buscarOrdenCompra idOrdenCompra ordenesCompra (indice + 1)
+
+retornarMercaderia :: Text -> [Factura] -> [Bodega] -> Maybe ([Factura], [Bodega])
+retornarMercaderia cFactura facturas bodegas = do
+    factura <- find (\f -> cFactura == idFactura f && estadoFactura f == "Activa") facturas
+    let facturaAnulada = factura { estadoFactura = "Anulada" }
+    let bodegasActualizadas = actualizarStock (articulosFactura facturaAnulada) bodegas
+    return (facturaAnulada : filter (\f -> idFactura f /= idFactura factura) facturas, bodegasActualizadas)
+
+actualizarStock :: [ArticuloFactura] -> [Bodega] -> [Bodega]
+actualizarStock [] bodegas = bodegas
+actualizarStock (articulo:articulos) bodegas =
+    case findBodegaDeArticulo (codigoArticuloFactura articulo) bodegas of
+        Just bodega -> let stockActualizado = sumarStock (codigoArticuloFactura articulo) (cantidadArticuloFactura articulo) (stock bodega)
+                       in bodega { stock = stockActualizado } : actualizarStock articulos bodegas
+        Nothing -> actualizarStock articulos bodegas
+
+findBodegaDeArticulo :: Text -> [Bodega] -> Maybe Bodega
+findBodegaDeArticulo codigoArticulo [] = Nothing
+findBodegaDeArticulo codigoArticulo (bodega:bodegas) =
+    if any (\linea -> codigoArticulo == codigoLineaIngreso linea) (stock bodega)
+        then Just bodega
+        else findBodegaDeArticulo codigoArticulo bodegas
+
+sumarStock :: Text -> Int -> [LineaIngreso] -> [LineaIngreso]
+sumarStock codigoArticulo cantidad [] = [LineaIngreso codigoArticulo "" cantidad]
+sumarStock codigoArticulo cantidad (linea:lineas) =
+    if codigoArticulo == codigoArticuloLineaIngreso linea
+        then linea { cantidad = cantidad + cantidadLineaIngreso linea } : lineas
+        else linea : sumarStock codigoArticulo cantidad lineas
