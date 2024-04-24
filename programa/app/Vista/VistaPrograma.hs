@@ -11,19 +11,12 @@ import Operaciones.CargarMostrarIngresos
 import Operaciones.CargarMostrarArticulos
 import Operaciones.OpcionesGenerales
 import Operaciones.Facturar
-import Operaciones.StockBodegas
 import Datas.Data
 import Data.Maybe
 
-ejecutarMenuPrincipal :: IO ()
-ejecutarMenuPrincipal =
+ejecutarMenuPrincipal :: Empresa -> [Bodega] -> [Usuario] -> [Articulo] -> [OrdenCompra] -> [Factura] IO ()
+ejecutarMenuPrincipal empresa bodegas usuarios articulos ordenesCompra facturas =
     do
-        empresa <- cargarDatosEmpresa
-        bodegas <- cargarDatosBodega
-        usuarios <- cargarDatosUsuarios
-        articulos <- cargarArticulosDesdeJSON
-        ordenesCompra <- cargarOrdenesDesdeJSON
-        facturas <- cargarFacturas
         imprimirMenuPrincipal
         opcion <- getLine
         case opcion of
