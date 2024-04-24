@@ -1,5 +1,6 @@
 module Inicio.InformacionUsuarios(
-    cargarDatosUsuarios
+    cargarDatosUsuarios,
+    obtenerUsuarioPorCedula
 ) where
 
 import Data.Aeson
@@ -12,6 +13,7 @@ import System.Directory (getCurrentDirectory)
 import System.IO
 import Text.Read (readMaybe)
 import Data.Maybe (listToMaybe)
+import Data.List (find)
 
 cargarDatosUsuarios :: IO [Usuario]
 cargarDatosUsuarios = do

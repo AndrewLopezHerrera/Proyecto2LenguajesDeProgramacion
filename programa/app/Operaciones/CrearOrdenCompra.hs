@@ -5,7 +5,8 @@ module Operaciones.CrearOrdenCompra (
     crearOrdenCompra,
     guardarOrdenCompraJSON,
     cargarOrdenesDesdeJSON,
-    eliminarOrdenPorId
+    eliminarOrdenPorId,
+    mostrarOrdenCompra
 ) where
 
 import GHC.Generics
@@ -62,3 +63,17 @@ eliminarOrdenPorId idOrdenEliminar = do
     ordenes <- cargarOrdenesDesdeJSON
     let ordenesActualizadas = filter (\orden -> idOrden orden /= idOrdenEliminar) ordenes
     B.writeFile "app\\BasesDeDatos\\OrdenesCompra.json" (encode ordenesActualizadas)
+
+mostrarOrdenCompra :: OrdenCompra -> IO ()
+mostrarOrdenCompra orden = do
+    putStrLn $ "ID de Orden: " ++ getIdOrdenCompra orden
+    putStrLn $ "Cédula del Cliente: " ++ getCedulaClienteOrdenCompra orden
+    putStrLn $ "Nombre del Cliente: " ++ getNombreClienteOrdenCompra orden
+    putStrLn $ "Fecha de la Orden: " ++ getFechaOrdenCompra orden
+    putStrLn "Líneas de Compra:"
+    mapM_ mostrarLineaOrdenCompra (getLineasOrdenCompra orden)
+
+mostrarLineaOrdenCompra :: LineaOrdenCompra -> IO ()
+mostrarLineaOrdenCompra linea = do
+    putStrLn $ "Código de Artículo: " ++ getCodigoArticuloOrdenCompra linea
+    putStrLn $ "Cantidad: " ++ show (getCantidadArticuloOrdenCompra linea)

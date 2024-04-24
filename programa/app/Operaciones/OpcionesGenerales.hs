@@ -2,7 +2,17 @@ module Operaciones.OpcionesGenerales
   (ejecutarMenuOpcionesGenerales)
 where
 
+import Data.Text (Text, pack)
+import System.IO
+import Inicio.InformacionComercial
 import Inicio.InformacionBodegas
+import Inicio.InformacionUsuarios
+import Operaciones.CrearOrdenCompra
+import Operaciones.CargarMostrarArticulos
+import Operaciones.Facturar
+import Datas.Data
+import Data.List
+import Data.Maybe (Maybe(Nothing),isJust, fromJust)
 
 ejecutarMenuOpcionesGenerales :: IO ()
 ejecutarMenuOpcionesGenerales = do
@@ -16,7 +26,7 @@ ejecutarMenuOpcionesGenerales = do
         "1" -> consultarOrdenCompra
         "2" -> consultarFactura
         "3" -> do nuevabodegas <- retornarMercaderia facturas bodegas
-                  guardarBodegas nuevabodegas
+                  guardarBodegas (snd nuevabodegas)
         "4" -> putStrLn "\nVolviendo..."
         _ -> putStrLn "\nOpción incorrecta.\n"
 
@@ -31,7 +41,7 @@ consultarOrdenCompra :: IO ()
 consultarOrdenCompra = do
     putStrLn "Ingrese el ID de la orden de compra a consultar:"
     idOrden <- getLine
-    ordenes <- cargarOrdenesCompra
+    ordenes <- cargarOrdenesDesdeJSON
     let orden = find (\orden -> getIdOrdenCompra orden == idOrden) ordenes
     case orden of
         Just ord -> mostrarOrdenCompra ord
@@ -47,39 +57,39 @@ consultarFactura = do
         Just fac -> mostrarFactura fac
         Nothing -> putStrLn $ "No se encontró ninguna factura con el ID '" ++ idFactura ++ "'."
 
-retornarMercaderia :: [Factura] -> [Bodega] -> Maybe ([Factura], [Bodega])
-retornarMercaderia cFactura facturas bodegas = do
+retornarMercaderia :: [Factura] -> [Bodega] -> IO ([Factura], [Bodega])
+retornarMercaderia facturas bodegas = do
     putStr "Ingrese el código de la factura: "
     hFlush stdout
     cFactura <- getLine
     let factura = find (\f -> cFactura == idFactura f && estadoFactura f == "Activa") facturas
-    case factura of
-        Just fac -> do
-            let facturaAnulada = fac { estadoFactura = "Anulada" }
-            let bodegasActualizadas = actualizarStock (articulosFactura facturaAnulada) bodegas
-            return $ Just (facturaAnulada : filter (\f -> idFactura f /= idFactura facturaAnulada) facturas, bodegasActualizadas)
-        Nothing -> do
-            putStrLn "No se encontró ninguna factura activa con el código ingresado."
-            return Nothing
+    if isJust factura
+        then do
+            let facturaAnulada = facturaAnulada { estadoFactura = "Anulada" }
+                bodegasActualizadas = actualizarStock (getArticulosFactura facturaAnulada) bodegas
+            return (facturaAnulada : filter (\f -> idFactura f /= idFactura facturaAnulada) facturas, bodegasActualizadas)
+        else do
+            putStrLn "La factura ingresada no existe o no está activa."
+            retornarMercaderia facturas bodegas
 
 actualizarStock :: [ArticuloFactura] -> [Bodega] -> [Bodega]
 actualizarStock [] bodegas = bodegas
 actualizarStock (articulo:articulos) bodegas =
-    case findBodegaDeArticulo (codigoArticuloFactura articulo) bodegas of
-        Just bodega -> let stockActualizado = sumarStock (codigoArticuloFactura articulo) (cantidadArticuloFactura articulo) (stock bodega)
+    case findBodegaDeArticulo (pack (getCodigoArticuloFactura articulo)) bodegas of
+        Just bodega -> let stockActualizado = sumarStock (pack (codigoArticuloFactura articulo)) (cantidadArticuloFactura articulo) (stock bodega)
                        in bodega { stock = stockActualizado } : actualizarStock articulos bodegas
         Nothing -> actualizarStock articulos bodegas
 
 findBodegaDeArticulo :: Text -> [Bodega] -> Maybe Bodega
 findBodegaDeArticulo codigoArticulo [] = Nothing
 findBodegaDeArticulo codigoArticulo (bodega:bodegas) =
-    if any (\linea -> codigoArticulo == codigoLineaIngreso linea) (stock bodega)
+    if any (\linea -> codigoArticulo == (pack (codigoLineaIngreso linea))) (stock bodega)
         then Just bodega
         else findBodegaDeArticulo codigoArticulo bodegas
 
 sumarStock :: Text -> Int -> [LineaIngreso] -> [LineaIngreso]
-sumarStock codigoArticulo cantidad [] = [LineaIngreso codigoArticulo "" cantidad]
+sumarStock codigoArticulo cantidad [] = [LineaIngreso (textTostring codigoArticulo) "" cantidad]
 sumarStock codigoArticulo cantidad (linea:lineas) =
-    if codigoArticulo == codigoArticuloLineaIngreso linea
-        then linea { cantidad = cantidad + cantidadLineaIngreso linea } : lineas
+    if codigoArticulo == (pack (getCodigoArticuloLineaIngreso linea))
+        then linea { cantidad = cantidad + getCantidadLineaIngreso linea } : lineas
         else linea : sumarStock codigoArticulo cantidad lineas

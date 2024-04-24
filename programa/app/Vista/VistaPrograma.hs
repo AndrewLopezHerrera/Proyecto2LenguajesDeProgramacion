@@ -7,9 +7,13 @@ import Inicio.InformacionComercial
 import Inicio.InformacionBodegas
 import Inicio.InformacionUsuarios
 import Operaciones.CrearOrdenCompra
+import Operaciones.CargarMostrarIngresos
 import Operaciones.CargarMostrarArticulos
+import Operaciones.OpcionesGenerales
 import Operaciones.Facturar
+import Operaciones.StockBodegas
 import Datas.Data
+import Data.Maybe
 
 ejecutarMenuPrincipal :: IO ()
 ejecutarMenuPrincipal =
@@ -34,12 +38,12 @@ ejecutarMenuPrincipal =
                       user <- getLine
                       ingreso <- cargarIngreso user ruta articulos bodegas usuarios
                       putStrLn "Ingreso cargado:"
-                      mostrarIngreso ingreso
+                      mostrarIngreso (fromMaybe (error "El valor Maybe es Nothing") ingreso)
             "3" -> do orden <- crearOrdenCompra
                       guardarOrdenCompraJSON orden
-            "4" -> facturarOrdenCompra ordenesCompra bodegas empresa
-            "5" -> verStockBodegas
-            "6" -> ejecutarMenuOpcionesGenerales bodegas facturas ordenesCompra articulos
+            --"4" -> facturarOrdenCompra ordenesCompra bodegas empresa
+            "5" -> verStockBodegas bodegas
+            "6" -> ejecutarMenuOpcionesGenerales
             "7" -> putStrLn "\n\t***Hasta luego***"
             _   -> putStrLn "Opcion no invalida"
 

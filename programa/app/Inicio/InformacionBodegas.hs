@@ -1,6 +1,7 @@
 module Inicio.InformacionBodegas(
     cargarDatosBodega,
-    findBodega
+    findBodega,
+    guardarBodegas
 ) where
 
 import Data.Aeson

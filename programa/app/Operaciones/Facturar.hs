@@ -1,22 +1,26 @@
-module Operaciones.Facturar
-  ( cargarFacturas,
-    guardarFacturas,
-    crearFactura,
-  )
-where
+module Operaciones.Facturar (
+    --facturarOrdenCompra,
+    anadirFactura,
+    cargarFacturas,
+    mostrarFactura,
+    textTostring
+) where
 
 import Data.Aeson
+import Data.List
+import Data.Maybe
+import Data.Time
 import qualified Data.ByteString.Lazy as B
 import Data.Text (Text, pack, unpack)
+import qualified Data.Text as T
 import Datas.Data
 import GHC.Generics
 import System.Directory (getCurrentDirectory)
 import System.FilePath ((</>))
 import System.IO
 import Text.Read (readMaybe)
-import Data.List (find)
-import Data.Maybe (fromMaybe)
 import Data.Time.Clock.POSIX (getPOSIXTime)
+import Data.ByteString (unpack)
 
 anadirFactura :: Factura -> IO ()
 anadirFactura nuevaFactura = do
@@ -42,7 +46,7 @@ guardarFacturas facturas = do
   let direccion = cwd </> "app\\BasesDeDatos\\Facturas.json"
   B.writeFile direccion json
   putStrLn "\nSe ha guardado la factura"
-
+{-
 buscarArticulo :: String -> [Articulo] -> Maybe Articulo
 buscarArticulo codigo = find (\articulo -> codigoArticulo articulo == codigo)
 
@@ -121,13 +125,13 @@ facturar ordenCompra bodegas usuario empresa = do
             let subtotal = calcularSubtotal lineasFactura
             let total = calcularTotal lineasFactura
             return $ Just $ Factura idFactura usuario empresa "Activo" tiempoActual lineasFactura subtotal total
-
+-}
 mostrarFactura :: Factura -> IO ()
 mostrarFactura factura = do
     putStrLn "Información de la factura:"
     putStrLn $ "ID: " ++ getIdFactura factura
-    putStrLn $ "Cédula del cliente: " ++ getCedulaClienteFactura factura
-    putStrLn $ "Nombre del cliente: " ++ getNombreClienteFactura factura
+    putStrLn $ "Cédula del cliente: " ++ show (getCedulaClienteFactura factura)
+    putStrLn $ "Nombre del cliente: " ++ textTostring (getNombreClienteFactura factura)
     putStrLn $ "Estado: " ++ getEstadoFactura factura
     putStrLn $ "Fecha y hora: " ++ getFechaFactura factura
     putStrLn "Líneas de la factura:"
@@ -140,3 +144,6 @@ mostrarLineaFactura linea = do
     putStrLn $ "Cantidad: " ++ show (getCantidadArticulosFactura linea)
     putStrLn $ "Costo unitario: " ++ show (getCostoArticuloFactura linea)
     putStrLn $ "Subtotal: " ++ show (getSubTotalArticuloFactura linea)
+
+textTostring :: Text -> String
+textTostring = T.unpack

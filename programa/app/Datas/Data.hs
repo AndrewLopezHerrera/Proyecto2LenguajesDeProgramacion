@@ -47,7 +47,11 @@ module Datas.Data (
     getTipoIVAArticuloFactura,
     getCantidadArticulosFactura,
     getSubTotalArticuloFactura,
-    getTotalArticuloFactura
+    getTotalArticuloFactura,
+    getLineasOrdenCompra,
+    getFechaOrdenCompra,
+    getNombreClienteOrdenCompra,
+    getCedulaClienteOrdenCompra
 ) where
 
 import GHC.Generics
@@ -147,8 +151,10 @@ data Ingreso = Ingreso { codigoIngreso :: String
                        , idUsuario :: String
                        , fecha :: String
                        , lineasIngreso :: [LineaIngreso]
-                       } deriving (Show)
+                       } deriving (Show, Generic)
 
+instance FromJSON Ingreso
+instance ToJSON Ingreso
 
 data LineaIngreso = LineaIngreso { codigoLineaIngreso :: String
                                  , identificadorBodega :: String
@@ -215,7 +221,7 @@ data Factura =
         lineasFactura :: [ArticuloFactura],
         subtotalFactura :: Double,
         totalFactura :: Double
-    } deriving(Generic, Show)
+    } deriving(Show, Generic)
 
 instance FromJSON Factura
 instance ToJSON Factura
@@ -276,7 +282,7 @@ getTipoArticuloFactura = tipoArticuloFactura
 getTipoIVAArticuloFactura :: ArticuloFactura -> TipoIVA
 getTipoIVAArticuloFactura = tipoIVAArticuloFactura
 
-getIntArticulosFactura :: ArticuloFactura -> Int
+getCantidadArticulosFactura :: ArticuloFactura -> Int
 getCantidadArticulosFactura = cantidadArticuloFactura
 
 getSubTotalArticuloFactura :: ArticuloFactura -> Double
