@@ -11,12 +11,19 @@ import Operaciones.CargarMostrarIngresos
 import Operaciones.CargarMostrarArticulos
 import Operaciones.OpcionesGenerales
 import Operaciones.Facturar
+import Operaciones.StockBodegas
 import Datas.Data
 import Data.Maybe
 
-ejecutarMenuPrincipal :: Empresa -> [Bodega] -> [Usuario] -> [Articulo] -> [OrdenCompra] -> [Factura] IO ()
-ejecutarMenuPrincipal empresa bodegas usuarios articulos ordenesCompra facturas =
+ejecutarMenuPrincipal :: IO ()
+ejecutarMenuPrincipal =
     do
+        empresa <- cargarDatosEmpresa
+        bodegas <- cargarDatosBodega
+        usuarios <- cargarDatosUsuarios
+        articulos <- cargarArticulosDesdeJSON
+        ordenesCompra <- cargarOrdenesDesdeJSON
+        facturas <- cargarFacturas
         imprimirMenuPrincipal
         opcion <- getLine
         case opcion of
@@ -26,6 +33,7 @@ ejecutarMenuPrincipal empresa bodegas usuarios articulos ordenesCompra facturas 
                       putStrLn "Articulos cargados:"
                       mostrarArticulos articulos
                       guardarArticulosJSON articulos
+                      ejecutarMenuPrincipal
             "2" -> do putStrLn "Ingrese la ruta del archivo de ingreso:"
                       ruta <- getLine
                       putStrLn "Ingrese la indentificacion que realiza el ingreso:"
@@ -35,13 +43,18 @@ ejecutarMenuPrincipal empresa bodegas usuarios articulos ordenesCompra facturas 
                       mostrarIngreso (fromMaybe (error "El valor Maybe es Nothing") ingreso)
                       guardarIngreso (fromMaybe (error "El valor Maybe es Nothing") ingreso)
                       guardarBodegas (actualizarBodegas(getLineasIngreso (fromMaybe (error "El valor Maybe es Nothing") ingreso)) bodegas)
+                      ejecutarMenuPrincipal
             "3" -> do orden <- crearOrdenCompra
                       guardarOrdenCompraJSON orden
-            --"4" -> facturarOrdenCompra ordenesCompra bodegas empresa
-            "5" -> verStockBodegas bodegas
-            "6" -> ejecutarMenuOpcionesGenerales
+                      ejecutarMenuPrincipal
+            "4" -> ejecutarMenuPrincipal--facturarOrdenCompra ordenesCompra bodegas empresa
+            "5" -> do verStockBodegas bodegas
+                      ejecutarMenuPrincipal
+            "6" -> do ejecutarMenuOpcionesGenerales
+                      ejecutarMenuPrincipal
             "7" -> putStrLn "\n\t***Hasta luego***"
-            _   -> putStrLn "Opcion no invalida"
+            _   -> do putStrLn "Opcion no invalida"
+                      ejecutarMenuPrincipal
 
 imprimirMenuPrincipal :: IO ()
 imprimirMenuPrincipal = do

@@ -23,12 +23,16 @@ ejecutarMenuOpcionesGenerales = do
     imprimirMenuOpcionesGenerales
     opcion <- getLine
     case opcion of
-        "1" -> consultarOrdenCompra
-        "2" -> consultarFactura
+        "1" -> do consultarOrdenCompra
+                  ejecutarMenuOpcionesGenerales
+        "2" -> do consultarFactura
+                  ejecutarMenuOpcionesGenerales
         "3" -> do nuevabodegas <- retornarMercaderia facturas bodegas
                   guardarBodegas (snd nuevabodegas)
+                  ejecutarMenuOpcionesGenerales
         "4" -> putStrLn "\nVolviendo..."
-        _ -> putStrLn "\nOpción incorrecta.\n"
+        _ -> do putStrLn "\nOpción incorrecta.\n"
+                ejecutarMenuOpcionesGenerales
 
 imprimirMenuOpcionesGenerales :: IO()
 imprimirMenuOpcionesGenerales = do
