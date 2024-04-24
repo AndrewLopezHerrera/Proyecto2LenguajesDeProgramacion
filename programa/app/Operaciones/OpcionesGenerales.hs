@@ -1,12 +1,3 @@
-import Operaciones.Facturar
-import Operaciones.CargarMostrarArticulos
-import Operaciones.CargarMostrarIngresos
-import Operaciones.CrearOrdenCompra
-import Datas.Data
-import Data.Text (Text, pack, unpack)
-
-ejecutarMenuOpcionesGenerales :: [Bodega] ->  IO ()
-ejecutarMenuOpcionesGenerales bodegas = do
 module Operaciones.OpcionesGenerales
   (ejecutarMenuOpcionesGenerales)
 where
@@ -32,9 +23,6 @@ ejecutarMenuOpcionesGenerales = do
     imprimirMenuOpcionesGenerales
     opcion <- getLine
     case opcion of
-        "1" -> consultarOrdenCompra ordenesCompra articulos
-        "2" -> consultarFactura facturas
-        "3" -> 
         "1" -> consultarOrdenCompra
         "2" -> consultarFactura
         "3" -> do nuevabodegas <- retornarMercaderia facturas bodegas
@@ -99,92 +87,6 @@ findBodegaDeArticulo codigoArticulo (bodega:bodegas) =
         then Just bodega
         else findBodegaDeArticulo codigoArticulo bodegas
 
-consultarOrdenCompra :: [OrdenCompra] -> [Artículo] -> IO()
-consultarOrdenCompra ordenesCompra articulos = do
-    putStr "Ingrese el ID de la orden de compra a buscar: "
-    hFlush stdout
-    ioID <- getLine
-    let
-        id = pack id :: Text
-        ordenCompraArray = buscarOrdenCompra id ordenesCompra
-    in
-        if length ordenCompraArray == 0 then
-            putStrLn "\nNo se ha encontrado la orden de compra\n"
-        else
-            let
-                ordenCompra = head ordenCompraArray
-                idOrden = getIdOrdenCompra ordenCompra
-                cedulaCliente = getCedulaClienteOrdenCompra ordenCompra
-                nombreCliente = getNombreClienteOrdenCompra ordenCompra
-                fechaOrden = getFechaOrdenCompra ordenCompra
-                lineas = getLineasOrdenCompra ordenCompra
-            in do
-                putStrLn ("ID: " ++ idOrden)
-                putStrLn ("Cedula del cliente: " ++ cedulaCliente)
-                putStrLn ("Nombre del cliente: " ++ nombreCliente)
-                putStrLn ("Fecha: " ++ fechaOrden)
-                putStrLn ("Artículos: ")
-                mostrarArticulosOrdenCompra lineas articulos 0
-
-mostrarArticulosOrdenCompra :: [LineaOrdenCompra] -> [Artículo] -> IO()
-mostrarArticulosOrdenCompra lineas articulos indice =
-    if length lineas == 0 then
-        putStrLn "\tNo hay artículos en la orden de compra"
-    else if length lineas == indice then
-        putStr "============================================"
-    else
-        let
-            linea = lineas !! indice
-            codigoArticulo = getCodigoArticuloLineaIngreso linea
-            articuloArray = buscarArticulo articulos codigoArticulo 0
-        in
-            if length articulo == 0 then
-                mostrarArticulosOrdenCompra lineas articulos (indice + 1)
-            else
-                let
-                    articulo = head articuloArray
-                    nombre = getNombreArticulo articulo
-                    costo = getCostoArticulo articulo
-                    tipo = getTipoArticulo articulo
-                    tipoIVA = getTipoIVAArticulo articulo
-                in
-                    putStrLn ("\tCodigo: " ++ codigoArticulo)
-                    putStrLn ("\tNombre: " ++ nombre)
-                    putStrLn ("\tCosto: " ++ show costo)
-                    putStrLn ("\tTipo: " ++ show tipo)
-                    putStrLn ("Tipo IVA: " ++ show tipoIVA)
-                    putStrLn ("---------------------------------")
-                    mostrarArticulosOrdenCompra lineas articulos (indice + 1)
-
-buscarArticulo :: [Artículo] -> String -> Int -> [Articulo]
-buscarArticulo articulos codigoArticulo indice =
-    if length articulos == 0 then
-        []
-    else
-        let
-            articulo <- articulos indice
-            codigoArticuloGuardado = getCodigoArticulo articulo
-        in
-            if codigoArticuloGuardado == codigoArticulo then
-                [articulo]
-            else
-                buscarArticulo articulos codigoArticulo (indice + 1)
-            
-        
-
-buscarOrdenCompra :: Text -> [OrdenCompra] -> Int -> IO()
-buscarOrdenCompra idOrdenCompra ordenesCompra indice =
-    if length ordenesCompra == indice then
-        []
-    else
-        let
-            ordenCompra = ordenesCompra !! indice
-            idOrdenCompraGuardado = getIdOrdenCompra ordenCompra
-        in
-            if idOrdenCompraGuardado == ordenCompra then
-                [ordenCompra]
-            else
-                buscarOrdenCompra idOrdenCompra ordenesCompra (indice + 1)
 sumarStock :: Text -> Int -> [LineaIngreso] -> [LineaIngreso]
 sumarStock codigoArticulo cantidad [] = [LineaIngreso (textTostring codigoArticulo) "" cantidad]
 sumarStock codigoArticulo cantidad (linea:lineas) =
