@@ -13,24 +13,32 @@ import GHC.Generics
 import Data.Aeson
 import Data.Aeson.TH
 import qualified Data.ByteString.Lazy as B
-import Data.List (delete)
+import Data.Maybe (fromMaybe, mapMaybe)
 import Datas.Data
 import Data.Time.Clock (getCurrentTime)
 import Data.Time.Format (formatTime, defaultTimeLocale)
 import System.IO
+import Data.List
+import Data.Text (Text, pack)
 import System.FilePath ((</>))
 import System.Directory (getCurrentDirectory)
+import Operaciones.Facturar (textTostring)
 
-crearOrdenCompra :: IO OrdenCompra
-crearOrdenCompra = do
+crearOrdenCompra :: [Usuario] -> IO (Maybe OrdenCompra)
+crearOrdenCompra usuarios= do
     putStrLn "Ingrese la cedula del cliente:"
     cedula <- getLine
-    putStrLn "Ingrese el nombre del cliente:"
-    nombre <- getLine
-    tiempo <- fmap (formatTime defaultTimeLocale "%Y%m%d%H%M%S") getCurrentTime
-    lineas <- ingresarLineasOrdenCompra []
-    let idOrdenGenerado = cedula ++ "_" ++ tiempo
-    return $ OrdenCompra idOrdenGenerado cedula nombre tiempo lineas
+    let maybeUsuario = find (\usuario -> (show (getCedula usuario)) == cedula) usuarios
+    case maybeUsuario of
+        Just user -> do
+            tiempo <- fmap (formatTime defaultTimeLocale "%Y%m%d%H%M%S") getCurrentTime
+            lineas <- ingresarLineasOrdenCompra []
+            let idOrdenGenerado = cedula ++ "_" ++ tiempo
+            putStrLn $ "ID de Orden Generada: " ++ show idOrdenGenerado
+            return $ Just $ OrdenCompra idOrdenGenerado cedula (textTostring (getNombre user)) tiempo lineas
+        Nothing -> do
+            putStrLn "El idUsuario especificado no existe."
+            return Nothing
 
 ingresarLineasOrdenCompra :: [LineaOrdenCompra] -> IO [LineaOrdenCompra]
 ingresarLineasOrdenCompra lineasPrevias = do

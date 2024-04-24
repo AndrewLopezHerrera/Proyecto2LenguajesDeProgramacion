@@ -32,7 +32,7 @@ ejecutarMenuPrincipal =
                       articulos <- cargarArticulos ruta
                       putStrLn "Articulos cargados:"
                       mostrarArticulos articulos
-                      guardarArticulosJSON articulos
+                      agregarArticulos articulos
                       ejecutarMenuPrincipal
             "2" -> do putStrLn "Ingrese la ruta del archivo de ingreso:"
                       ruta <- getLine
@@ -40,12 +40,12 @@ ejecutarMenuPrincipal =
                       user <- getLine
                       ingreso <- cargarIngreso user ruta articulos bodegas usuarios
                       putStrLn "Ingreso cargado:"
-                      mostrarIngreso (fromMaybe (error "El valor Maybe es Nothing") ingreso)
-                      guardarIngreso (fromMaybe (error "El valor Maybe es Nothing") ingreso)
-                      guardarBodegas (actualizarBodegas(getLineasIngreso (fromMaybe (error "El valor Maybe es Nothing") ingreso)) bodegas)
+                      mostrarIngreso (fromMaybe (error "Fallo Ingreso") ingreso)
+                      guardarIngreso (fromMaybe (error "Fallo Ingreso") ingreso)
+                      guardarBodegas (actualizarBodegas(getLineasIngreso (fromMaybe (error "Fallo Ingreso") ingreso)) bodegas)
                       ejecutarMenuPrincipal
-            "3" -> do orden <- crearOrdenCompra
-                      guardarOrdenCompraJSON orden
+            "3" -> do orden <- crearOrdenCompra usuarios
+                      guardarOrdenCompraJSON (fromMaybe (error "Fallo Orden") orden)
                       ejecutarMenuPrincipal
             "4" -> ejecutarMenuPrincipal--facturarOrdenCompra ordenesCompra bodegas empresa
             "5" -> do verStockBodegas bodegas
@@ -58,11 +58,11 @@ ejecutarMenuPrincipal =
 
 imprimirMenuPrincipal :: IO ()
 imprimirMenuPrincipal = do
-    putStr "Menu principal\n\t1. Cargar y mostrar articulos"
+    putStr "Menu principal\n1. Cargar y mostrar articulos"
     hFlush stdout
-    putStr "\t2. Cargar y mostrar ingresos de inventario\n\t3. Crear orden de compra"
+    putStr "\t2. Cargar y mostrar ingresos de inventario\n3. Crear orden de compra"
     hFlush stdout
-    putStr "\t4. Facturar\n\t5. Ver stock de bodegas\n\t6. Opciones generales\n\t7. Salir"
+    putStr "\t4. Facturar\n5. Ver stock de bodegas\t\t6. Opciones generales\n7. Salir"
     hFlush stdout
     putStr "\nSeleccione una opcion: "
     hFlush stdout
