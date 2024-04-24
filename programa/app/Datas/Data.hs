@@ -51,7 +51,8 @@ module Datas.Data (
     getLineasOrdenCompra,
     getFechaOrdenCompra,
     getNombreClienteOrdenCompra,
-    getCedulaClienteOrdenCompra
+    getCedulaClienteOrdenCompra,
+    getLineasIngreso
 ) where
 
 import GHC.Generics
@@ -155,6 +156,9 @@ data Ingreso = Ingreso { codigoIngreso :: String
 
 instance FromJSON Ingreso
 instance ToJSON Ingreso
+
+getLineasIngreso :: Ingreso -> [LineaIngreso]
+getLineasIngreso (Ingreso _ _ _ lineas) = lineas
 
 data LineaIngreso = LineaIngreso { codigoLineaIngreso :: String
                                  , identificadorBodega :: String

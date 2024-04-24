@@ -1,1 +1,40 @@
-[]
+[
+  {
+    "capacidad": 200,
+    "idBodega": 1,
+    "stock": [
+      {
+        "cantidad": 50,
+        "codigoLineaIngreso": "001",
+        "identificadorBodega": "1"
+      }
+    ],
+    "ubicacion": "Uruguay"
+  },
+  {
+    "capacidad": 100,
+    "idBodega": 2,
+    "stock": [
+      {
+        "cantidad": 30,
+        "codigoLineaIngreso": "002",
+        "identificadorBodega": "2"
+      }
+    ],
+    "ubicacion": "Panama"
+  },
+  {
+    "capacidad": 400,
+    "idBodega": 3,
+    "stock": [
+      {
+        "cantidad": 20,
+        "codigoLineaIngreso": "003",
+        "identificadorBodega": "3"
+      }
+    ],
+    "ubicacion": "Costa Rica"
+  },
+  { "capacidad": 900, "idBodega": 4, "stock": [], "ubicacion": "Italia" },
+  { "capacidad": 700, "idBodega": 5, "stock": [], "ubicacion": "Japon" }
+]

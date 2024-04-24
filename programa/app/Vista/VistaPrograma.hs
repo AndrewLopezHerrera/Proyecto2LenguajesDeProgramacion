@@ -32,13 +32,16 @@ ejecutarMenuPrincipal =
                       articulos <- cargarArticulos ruta
                       putStrLn "Articulos cargados:"
                       mostrarArticulos articulos
+                      guardarArticulosJSON articulos
             "2" -> do putStrLn "Ingrese la ruta del archivo de ingreso:"
                       ruta <- getLine
-                      putStrLn "Ingrese la usuario que realiza ingreso:"
+                      putStrLn "Ingrese la indentificacion que realiza el ingreso:"
                       user <- getLine
                       ingreso <- cargarIngreso user ruta articulos bodegas usuarios
                       putStrLn "Ingreso cargado:"
                       mostrarIngreso (fromMaybe (error "El valor Maybe es Nothing") ingreso)
+                      guardarIngreso (fromMaybe (error "El valor Maybe es Nothing") ingreso)
+                      guardarBodegas (actualizarBodegas(getLineasIngreso (fromMaybe (error "El valor Maybe es Nothing") ingreso)) bodegas)
             "3" -> do orden <- crearOrdenCompra
                       guardarOrdenCompraJSON orden
             --"4" -> facturarOrdenCompra ordenesCompra bodegas empresa

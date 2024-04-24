@@ -16,6 +16,7 @@ import System.IO
 import Operaciones.CargarMostrarArticulos
 import System.Directory (getCurrentDirectory)
 import System.IO.Error (catchIOError)
+import System.FilePath ((</>))
 
 cargarIngreso :: String -> String -> [Articulo] -> [Bodega] -> [Usuario] -> IO (Maybe Ingreso)
 cargarIngreso idUsuario fileName articulosExistentes bodegasExistentes usuarios = do
@@ -23,7 +24,7 @@ cargarIngreso idUsuario fileName articulosExistentes bodegasExistentes usuarios 
     case maybeUsuario of
         Just _ -> do
             tiempo <- fmap (formatTime defaultTimeLocale "%Y%m%d%H%M%S") getCurrentTime
-            contenido <- readFile fileName
+            contenido <- readFile ("app\\Operaciones\\Archivos\\" ++ fileName)
             let lineasIngreso = map (parseLineaIngreso articulosExistentes bodegasExistentes) (lines contenido)
             return $ Just $ Ingreso (idUsuario ++ "_" ++ tiempo) idUsuario tiempo lineasIngreso
         Nothing -> do
@@ -55,7 +56,7 @@ cantidadValida :: Int -> Bool
 cantidadValida cant = cant > 0
 
 cantidadDisponibleValida :: Int -> Bodega -> Bool
-cantidadDisponibleValida cant bodega = cant <= sum (map getCantidadLineaIngreso (stock bodega))
+cantidadDisponibleValida cant bodega = (cant + sum (map getCantidadLineaIngreso (stock bodega))) <= round (getCapacidad bodega)
 
 mostrarIngreso :: Ingreso -> IO ()
 mostrarIngreso ingreso = do
@@ -75,22 +76,18 @@ mostrarLineasPorCodigo codigo ingresos = do
 guardarIngreso :: Ingreso -> IO ()
 guardarIngreso ingreso = do
     ingresos <- cargarIngresosDesdeJSON
-    let json = encode ingresos
-    cwd <- getCurrentDirectory
-    let direccion = cwd ++ "app\\BasesDeDatos\\Ingresos.json"
-    catchIOError (B.writeFile direccion json >> putStrLn "\nSe ha guardado los ingresos.")
-        (\_ -> putStrLn "\nError al guardar los ingresos.")
+    let nuevosIngresos = ingreso : ingresos
+    B.writeFile "app\\BasesDeDatos\\Ingresos.json" (encode nuevosIngresos)
+    putStrLn "\nSe ha guardado los ingresos."
 
 cargarIngresosDesdeJSON :: IO [Ingreso]
 cargarIngresosDesdeJSON = do
     cwd <- getCurrentDirectory
-    let direccion = cwd ++ "app\\BasesDeDatos\\Ingresos.json"
-    catchIOError
-     (do json <- B.readFile direccion
-         case eitherDecode json of
-           Left err -> error err
-           Right ingresos -> return ingresos)
-     (\ _ -> return [])
+    let direccion = cwd </> "app\\BasesDeDatos\\Ingresos.json"
+    json <- B.readFile direccion
+    case eitherDecode json of
+        Left err -> error err
+        Right ingresos -> return ingresos
 
 consultarIngresoPorCodigo :: String -> IO ()
 consultarIngresoPorCodigo codigo = do

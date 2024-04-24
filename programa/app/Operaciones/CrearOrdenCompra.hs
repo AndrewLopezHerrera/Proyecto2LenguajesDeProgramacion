@@ -48,6 +48,7 @@ guardarOrdenCompraJSON nuevaOrdenCompra = do
     ordenesAnteriores <- cargarOrdenesDesdeJSON
     let ordenesActualizadas = nuevaOrdenCompra : ordenesAnteriores
     B.writeFile "app\\BasesDeDatos\\OrdenesCompra.json" (encode ordenesActualizadas)
+    putStrLn "\nSe ha guardado la orden de compra."
 
 cargarOrdenesDesdeJSON :: IO [OrdenCompra]
 cargarOrdenesDesdeJSON = do

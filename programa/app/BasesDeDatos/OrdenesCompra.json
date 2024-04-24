@@ -1,1 +1,9 @@
-[]
+[
+  {
+    "cedulaClienteOrden": "604330123",
+    "fechaOrden": "20240424040441",
+    "idOrden": "604330123_20240424040441",
+    "lineasCompra": [{ "cantidadLineaOrden": 2, "codigoLineaOrden": "001" }],
+    "nombreClienteOrden": "Gloria"
+  }
+]

@@ -17,7 +17,7 @@ import System.Directory (getCurrentDirectory)
 
 cargarArticulos :: FilePath -> IO [Articulo]
 cargarArticulos nombre = do
-    contenido <- readFile ("./Archivos/" ++ nombre)
+    contenido <- readFile ("app\\Operaciones\\Archivos\\" ++ nombre)
     let lineas = lines contenido
     return $ map parseArticulo lineas
 

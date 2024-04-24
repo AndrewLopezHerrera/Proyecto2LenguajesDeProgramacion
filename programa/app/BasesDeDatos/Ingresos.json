@@ -1,1 +1,24 @@
-[]
+[
+  {
+    "codigoIngreso": "302220976_20240424042524",
+    "fecha": "20240424042524",
+    "idUsuario": "302220976",
+    "lineasIngreso": [
+      {
+        "cantidad": 50,
+        "codigoLineaIngreso": "001",
+        "identificadorBodega": "1"
+      },
+      {
+        "cantidad": 30,
+        "codigoLineaIngreso": "002",
+        "identificadorBodega": "2"
+      },
+      {
+        "cantidad": 20,
+        "codigoLineaIngreso": "003",
+        "identificadorBodega": "3"
+      }
+    ]
+  }
+]
