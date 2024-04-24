@@ -1,5 +1,6 @@
 module Inicio.InformacionUsuarios(
-    cargarDatosUsuarios
+    cargarDatosUsuarios,
+    obtenerUsuarioPorCedula
 ) where
 
 import Data.Aeson
@@ -11,6 +12,8 @@ import System.FilePath ((</>))
 import System.Directory (getCurrentDirectory)
 import System.IO
 import Text.Read (readMaybe)
+import Data.Maybe (listToMaybe)
+import Data.List (find)
 
 cargarDatosUsuarios :: IO [Usuario]
 cargarDatosUsuarios = do
@@ -112,3 +115,6 @@ readJSONFileUsers direccion = do
     case eitherDecode json of
         Left err -> error err
         Right bodegas -> return bodegas
+
+obtenerUsuarioPorCedula :: Int -> [Usuario] -> Maybe Usuario
+obtenerUsuarioPorCedula cedula = find (\ usuario -> getCedula usuario == cedula)

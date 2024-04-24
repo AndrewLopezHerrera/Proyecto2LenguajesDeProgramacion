@@ -7,6 +7,25 @@ import Data.Text (Text, pack, unpack)
 
 ejecutarMenuOpcionesGenerales :: [Bodega] ->  IO ()
 ejecutarMenuOpcionesGenerales bodegas = do
+module Operaciones.OpcionesGenerales
+  (ejecutarMenuOpcionesGenerales)
+where
+
+import Data.Text (Text, pack)
+import System.IO
+import Inicio.InformacionComercial
+import Inicio.InformacionBodegas
+import Inicio.InformacionUsuarios
+import Operaciones.CrearOrdenCompra
+import Operaciones.CargarMostrarArticulos
+import Operaciones.Facturar
+import Datas.Data
+import Data.List
+import Data.Maybe (Maybe(Nothing),isJust, fromJust)
+
+ejecutarMenuOpcionesGenerales :: IO ()
+ejecutarMenuOpcionesGenerales = do
+    bodegas <- cargarDatosBodega
     facturas <- cargarFacturas
     articulos <- cargarArticulosDesdeJSON
     ordenesCompra <- cargarOrdenesDesdeJSON
@@ -16,6 +35,10 @@ ejecutarMenuOpcionesGenerales bodegas = do
         "1" -> consultarOrdenCompra ordenesCompra articulos
         "2" -> consultarFactura facturas
         "3" -> 
+        "1" -> consultarOrdenCompra
+        "2" -> consultarFactura
+        "3" -> do nuevabodegas <- retornarMercaderia facturas bodegas
+                  guardarBodegas (snd nuevabodegas)
         "4" -> putStrLn "\nVolviendo..."
         _ -> putStrLn "\nOpción incorrecta.\n"
 
@@ -26,82 +49,55 @@ imprimirMenuOpcionesGenerales = do
     putStr "\n\t3. Retornar mercadería\n\t4. Volver\nSeleccione un opción"
     hFlush stdout
 
-consultarFactura :: [Factura] -> IO()
-consultarFactura facturas = do
-    putStr "Ingrese el ID factura que desea consultar: "
+consultarOrdenCompra :: IO ()
+consultarOrdenCompra = do
+    putStrLn "Ingrese el ID de la orden de compra a consultar:"
+    idOrden <- getLine
+    ordenes <- cargarOrdenesDesdeJSON
+    let orden = find (\orden -> getIdOrdenCompra orden == idOrden) ordenes
+    case orden of
+        Just ord -> mostrarOrdenCompra ord
+        Nothing -> putStrLn $ "No se encontró ninguna orden de compra con el ID '" ++ idOrden ++ "'."
+
+consultarFactura :: IO ()
+consultarFactura = do
+    putStrLn "Ingrese el ID de la factura a consultar:"
+    idFactura <- getLine
+    facturas <- cargarFacturas
+    let factura = find (\factura -> getIdFactura factura == idFactura) facturas
+    case factura of
+        Just fac -> mostrarFactura fac
+        Nothing -> putStrLn $ "No se encontró ninguna factura con el ID '" ++ idFactura ++ "'."
+
+retornarMercaderia :: [Factura] -> [Bodega] -> IO ([Factura], [Bodega])
+retornarMercaderia facturas bodegas = do
+    putStr "Ingrese el código de la factura: "
     hFlush stdout
-    ioID <- getLine
-    let 
-        id = pack ioID :: Text
-        facturaArray = buscarFactura id facturas 0
-    in
-        if length facturaArray == 0 then
-            putStrLn "\nNo se ha encontrado la factura\n"
+    cFactura <- getLine
+    let factura = find (\f -> cFactura == idFactura f && estadoFactura f == "Activa") facturas
+    if isJust factura
+        then do
+            let facturaAnulada = facturaAnulada { estadoFactura = "Anulada" }
+                bodegasActualizadas = actualizarStock (getArticulosFactura facturaAnulada) bodegas
+            return (facturaAnulada : filter (\f -> idFactura f /= idFactura facturaAnulada) facturas, bodegasActualizadas)
         else do
-            let
-                factura = head facturaArray
-                idFactura = getIdFactura factura
-                nombreEmpresa = getNombreEmpresaFactura factura
-                sitioWebEmpresa = getSitioWebEmpresaFactura factura
-                contacto = getContactoEmpresaFactura factura
-                cedulaCliente = getCedulaClienteFactura factura
-                nombreCliente = getNombreClienteFactura factura
-                estadoFactura = getEstadoFactura factura
-                fechaFactura = getFechaFactura factura
-                articulosFactura = getArticulosFactura
-            in do
-                putStrLn ("\nId: " ++ unpack idFactura)
-                putStrLn ("Empresa: " ++ unpack nombreEmpresa)
-                putStrLn ("Sitio web: " ++ unpack sitioWebEmpresa)
-                putStrLn ("Contacto: " ++ unpack contacto)
-                putStrLn ("Cedula del cliente: " ++ show cedulaCliente)
-                putStrLn ("Nombre del cliente: " ++ unpack nombreCliente)
-                putStrLn ("Estado de la factura: " ++ unpack estadoFactura)
-                putStrLn ("Fecha de la factura: " ++ (formatTime defaultTimeLocale "%Y-%m-%d %H:%M:%S" fechaFactura))
-                putStrLn "Artículos :"
-                mostrarArticuloFactura articulosFactura
+            putStrLn "La factura ingresada no existe o no está activa."
+            retornarMercaderia facturas bodegas
 
-mostrarArticuloFactura :: [ArticuloFactura] -> Int -> IO()
-mostrarArticuloFactura articulos indice =
-    if length articulos == 0 then
-        putStrLn "--------------------------------------------\n"
-    else
-        let
-            articulo = articulos !! indice
-            codigoArticulo = getCodigoArticuloFactura articulo
-            nombreArticulo = getNombreArticuloFactura articulo
-            costoArticulo = getCostoArticuloFactura articulo
-            tipoArticulo = getTipoArticuloFactura articulo
-            tipoIVAArticulo = getTipoIVAArticuloFactura articulo
-            cantidadArticulo = getCantidadArticulosFactura articulo
-            subTotal = getSubTotalArticuloFactura articulo
-            total = getTotalArticuloFactura articulo
-        in do
-            putStrLn ("Código: " ++ unpack codigoArticulo)
-            putStrLn ("Nombre: " ++ unpack nombreArticulo)
-            putStrLn ("Costo: " ++ show costoArticulo)
-            putStrLn ("Tipo: " ++ show tipoArticulo)
-            putStrLn ("Tipo IVA: " ++ show tipoIVAArticulo)
-            putStrLn ("Cantidad: " ++ show cantidadArticulo)
-            putStrLn ("Subtotal: " ++ show subTotal)
-            putStrLn ("Total: " ++ show total)
-            putStrLn("=====================================")
-            mostrarArticuloFactura articulos (indice + 1)
-            
+actualizarStock :: [ArticuloFactura] -> [Bodega] -> [Bodega]
+actualizarStock [] bodegas = bodegas
+actualizarStock (articulo:articulos) bodegas =
+    case findBodegaDeArticulo (pack (getCodigoArticuloFactura articulo)) bodegas of
+        Just bodega -> let stockActualizado = sumarStock (pack (codigoArticuloFactura articulo)) (cantidadArticuloFactura articulo) (stock bodega)
+                       in bodega { stock = stockActualizado } : actualizarStock articulos bodegas
+        Nothing -> actualizarStock articulos bodegas
 
-buscarFactura :: Text -> [Factura] -> Int -> [Factura]
-buscarFactura idFactura facturas indice =
-    if length factura == indice then
-        []
-    else
-        let
-            factura = facturas !! indice
-            idFacturaGuardada = getIdFactura(factura)
-        in
-            if idFacturaGuardada == idFactura then
-                [factura]
-            else
-                buscarFactura idFactura facturas (indice + 1)
+findBodegaDeArticulo :: Text -> [Bodega] -> Maybe Bodega
+findBodegaDeArticulo codigoArticulo [] = Nothing
+findBodegaDeArticulo codigoArticulo (bodega:bodegas) =
+    if any (\linea -> codigoArticulo == (pack (codigoLineaIngreso linea))) (stock bodega)
+        then Just bodega
+        else findBodegaDeArticulo codigoArticulo bodegas
 
 consultarOrdenCompra :: [OrdenCompra] -> [Artículo] -> IO()
 consultarOrdenCompra ordenesCompra articulos = do
@@ -189,3 +185,9 @@ buscarOrdenCompra idOrdenCompra ordenesCompra indice =
                 [ordenCompra]
             else
                 buscarOrdenCompra idOrdenCompra ordenesCompra (indice + 1)
+sumarStock :: Text -> Int -> [LineaIngreso] -> [LineaIngreso]
+sumarStock codigoArticulo cantidad [] = [LineaIngreso (textTostring codigoArticulo) "" cantidad]
+sumarStock codigoArticulo cantidad (linea:lineas) =
+    if codigoArticulo == (pack (getCodigoArticuloLineaIngreso linea))
+        then linea { cantidad = cantidad + getCantidadLineaIngreso linea } : lineas
+        else linea : sumarStock codigoArticulo cantidad lineas

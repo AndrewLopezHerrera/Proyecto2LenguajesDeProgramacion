@@ -3,13 +3,19 @@ module Vista.VistaPrograma (
 ) where
 
 import System.IO
-import Operaciones.CargarMostrarArticulos
-import Operaciones.Facturar
+import Inicio.InformacionComercial
+import Inicio.InformacionBodegas
+import Inicio.InformacionUsuarios
 import Operaciones.CrearOrdenCompra
+import Operaciones.CargarMostrarIngresos
+import Operaciones.CargarMostrarArticulos
+import Operaciones.OpcionesGenerales
+import Operaciones.Facturar
 import Datas.Data
+import Data.Maybe
 
-ejecutarMenuPrincipal :: IO ()
-ejecutarMenuPrincipal empresa bodegas usuarios =
+ejecutarMenuPrincipal :: Empresa -> [Bodega] -> [Usuario] -> [Articulo] -> [OrdenCompra] -> [Factura] IO ()
+ejecutarMenuPrincipal empresa bodegas usuarios articulos ordenesCompra facturas =
     do
         imprimirMenuPrincipal
         opcion <- getLine
@@ -21,7 +27,7 @@ ejecutarMenuPrincipal empresa bodegas usuarios =
                       mostrarArticulos articulos
             "2" -> ejecutarMenuPrincipal empresa bodegas usuarios articulos ordenesCompra facturas
             "3" -> ejecutarMenuPrincipal empresa bodegas usuarios articulos ordenesCompra facturas 
-            "4" -> crearFactura 
+            "4" -> crearFactura bodegas articulos ordenesCompra facturas
             "5" -> ejecutarMenuPrincipal empresa bodegas usuarios articulos ordenesCompra facturas 
             "6" -> ejecutarMenuPrincipal empresa bodegas usuarios articulos ordenesCompra facturas 
             "7" -> putStrLn "\n\t***Hasta luego***"

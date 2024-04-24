@@ -1,30 +1,29 @@
-module Operaciones.Facturar
-  ( cargarFacturas,
-    guardarFacturas,
-    crearFactura,
-  )
-where
+module Operaciones.Facturar (
+    --facturarOrdenCompra,
+    anadirFactura,
+    cargarFacturas,
+    mostrarFactura,
+    textTostring
+) where
 
 import Data.Aeson
+import Data.List
+import Data.Maybe
+import Data.Time
 import qualified Data.ByteString.Lazy as B
 import Data.Text (Text, pack, unpack)
+import qualified Data.Text as T
 import Datas.Data
 import GHC.Generics
 import System.Directory (getCurrentDirectory)
 import System.FilePath ((</>))
 import System.IO
 import Text.Read (readMaybe)
-import Data.Time.Format
-import Data.Time.Clock
-import System.Locale
-import Inicio.InformacionComercial
-import Inicio.InformacionBodegas
-import Prelude (putStrLn)
 
 cargarFacturas :: IO [Factura]
 cargarFacturas = do
   cwd <- getCurrentDirectory
-  let direccion = cwd </> "app\\BasesDeDatos\\Empresa.json"
+  let direccion = cwd </> "app\\BasesDeDatos\\Facturas.json"
   fileContent <- B.readFile direccion
   case eitherDecode fileContent of
     Left err -> do
@@ -39,11 +38,8 @@ guardarFacturas facturas = do
   B.writeFile direccion json
   putStrLn "\nSe ha guardado la factura"
 
-crearFactura :: Empresa -> [Bodega] -> IO ()
-crearFactura = do
-  articulos <- cargarArticulosDesdeJSON
-  ordenesCompra <- cargarOrdenesDesdeJSON
-  facturas <- cargarFacturas
+crearFactura :: [Bodega] -> [Articulo] -> [OrdenCompra] -> [Factura] -> IO ()
+crearFactura bodegas articulos ordenesCompra facturas = do
   putStrLn "\t\tFacturación de Ordenes de Compra\n"
   putStr "Escriba el código de la orden de compra a facturar: "
   hFlush stdout
@@ -59,60 +55,8 @@ crearFactura = do
             then
               putStrLn ("\nNo existe la orden de compra con el código " ++ unpack idOrdenCompra)
             else
-              let
-                ordenCompra = head ordenCompra
-                id = getIdOrdenCompra ordenCompra
-                nombreEmpresa = getNombreEmpresa empresa
-                sitioWeb = getSitioWeb empresa
-                contacto = getContacto empresa
-                cedulaCliente = getCedulaClienteOrdenCompra ordenCompra
-                nombreCliente = getNombreClienteOrdenCompra ordenCompra
-                estado = pack "Activo"
-                fecha = pack getFechaOrdenCompra ordenCompra
-              in
-                putStrLn "Se ha creado la factura"
-
-contarArticulos :: [Bodega] -> String -> Int -> Int
-contarArticulos bodegas codigo indice =
-  if length bodegas == indice then
-    0
-  else
-    let
-      bodega = bodegas !! indice
-      lineaIngreso = getStock bodega
-      cantidad = contarArticulosAux lineaIngreso codigo 0
-    in
-      cantidad + contarArticulos bodegas codigo (indice + 1)
-
-contarArticulosAux :: [LineaIngreso] -> String -> Int -> Int
-contarArticulosAux articulos codigo indice =
-  if length articulos == indice then
-    0
-  else
-    let
-      articulo = articulos !! indice
-      codigoGuardado = getCodigoArticuloLineaIngreso articulo
-      cantidad = getCantidadLineaIngreso articulo
-    in
-      if codigoGuardado == codigo then
-        cantidad
-      else
-        contarArticulosAux articulos codigo (indice + 1)
-
-buscarArticulo :: [Artículo] -> String -> Int -> Articulo
-buscarArticulo articulos codigoArticulo indice =
-  if length articulos == indice then
-    []
-  else
-    let
-      articulo = articulos indice
-      codigoArticuloGuardado = getCodigoArticuloOrdenCompra articulo
-    in
-      if codigoArticuloGuardado == codigoArticulo then
-        [articulo]
-      else
-        buscarArticulo articulos codigoArticulo (indice + 1)
-
+              let objetoOrdenCompra = ordenCompra !! 0
+               in putStrLn "Se ha creado la factura"
 
 verificarExistenciaFactura :: [Factura] -> Text -> Int -> Bool
 verificarExistenciaFactura facturas idFactura indice =
