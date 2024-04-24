@@ -25,6 +25,11 @@ module Datas.Data (
     LineaOrdenCompra(..),
     Factura(..),
     ArticuloFactura(..),
+    getCodigoArticulo,
+    getNombreArticulo,
+    getCostoArticulo,
+    getTipoArticulo,
+    getTipoIVAArticulo,
     getCodigoArticuloLineaIngreso,
     getIdentificadorBodegaLineaIngreso,
     getCantidadLineaIngreso,
@@ -143,6 +148,21 @@ data Articulo = Articulo { codigoArticulo :: String
 instance FromJSON Articulo
 instance ToJSON Articulo
 
+getCodigoArticulo :: Articulo -> String
+getCodigoArticulo (Articulo codigoArticulo _ _ _ _) = codigoArticulo
+
+getNombreArticulo :: Articulo -> String
+getNombreArticulo (Articulo _ nombreArticulo _ _ _) = nombreArticulo
+
+getCostoArticulo :: Articulo -> Double
+getCostoArticulo (Articulo _ _ costoArticulo _ _) = costoArticulo
+
+getTipoArticulo :: Articulo -> Tipo
+getTipoArticulo (Articulo _ _ _ tipoArticulo _) = tipoArticulo
+
+getTipoIVAArticulo :: Articulo -> TipoIVA
+getTipoIVAArticulo (Articulo _ _ _ _ tipoIVAArticulo) = tipoIVAArticulo
+
 data Ingreso = Ingreso { codigoIngreso :: String
                        , idUsuario :: String
                        , fecha :: String
@@ -214,7 +234,7 @@ data Factura =
         cedulaClienteFactura :: Int,
         nombreClienteFactura :: !Text,
         estadoFactura :: !Text,
-        fechaFactura :: UTCTime,
+        fechaFactura :: !Text,
         articulosFactura :: [ArticuloFactura]
     } deriving(Generic, Show)
 
@@ -242,7 +262,7 @@ getNombreClienteFactura (Factura _ _ _ _ _ nombreCliente _ _ _) = nombreCliente
 getEstadoFactura :: Factura -> Text
 getEstadoFactura (Factura _ _ _ _ _ _ estado _ _) = estado
 
-getFechaFactura :: Factura -> UTCTime
+getFechaFactura :: Factura -> Text
 getFechaFactura  (Factura _ _ _ _ _ _ _ fecha _) = fecha
 
 getArticulosFactura :: Factura -> [ArticuloFactura]

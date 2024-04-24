@@ -1,9 +1,19 @@
-ejecutarMenuOpcionesGenerales :: [Bodega] -> [Factura] -> [OrdenCompra] -> [Articulos] -> IO ()
-ejecutarMenuOpcionesGenerales bodegas facturas ordenesCompra articulos = do
+import Operaciones.Facturar
+import Operaciones.CargarMostrarArticulos
+import Operaciones.CargarMostrarIngresos
+import Operaciones.CrearOrdenCompra
+import Datas.Data
+import Data.Text (Text, pack, unpack)
+
+ejecutarMenuOpcionesGenerales :: [Bodega] ->  IO ()
+ejecutarMenuOpcionesGenerales bodegas = do
+    facturas <- cargarFacturas
+    articulos <- cargarArticulosDesdeJSON
+    ordenesCompra <- cargarOrdenesDesdeJSON
     imprimirMenuOpcionesGenerales
     opcion <- getLine
     case opcion of
-        "1" ->
+        "1" -> consultarOrdenCompra ordenesCompra articulos
         "2" -> consultarFactura facturas
         "3" -> 
         "4" -> putStrLn "\nVolviendo..."
@@ -111,22 +121,59 @@ consultarOrdenCompra ordenesCompra articulos = do
                 cedulaCliente = getCedulaClienteOrdenCompra ordenCompra
                 nombreCliente = getNombreClienteOrdenCompra ordenCompra
                 fechaOrden = getFechaOrdenCompra ordenCompra
-                articulos = getLineasOrdenCompra ordenCompra
+                lineas = getLineasOrdenCompra ordenCompra
             in do
                 putStrLn ("ID: " ++ idOrden)
                 putStrLn ("Cedula del cliente: " ++ cedulaCliente)
                 putStrLn ("Nombre del cliente: " ++ nombreCliente)
                 putStrLn ("Fecha: " ++ fechaOrden)
-                putStrLn ("Arículos: ")
+                putStrLn ("Artículos: ")
+                mostrarArticulosOrdenCompra lineas articulos 0
 
 mostrarArticulosOrdenCompra :: [LineaOrdenCompra] -> [Artículo] -> IO()
-mostrarArticulosOrdenCompra lineas articulos =
+mostrarArticulosOrdenCompra lineas articulos indice =
+    if length lineas == 0 then
+        putStrLn "\tNo hay artículos en la orden de compra"
+    else if length lineas == indice then
+        putStr "============================================"
+    else
+        let
+            linea = lineas !! indice
+            codigoArticulo = getCodigoArticuloLineaIngreso linea
+            articuloArray = buscarArticulo articulos codigoArticulo 0
+        in
+            if length articulo == 0 then
+                mostrarArticulosOrdenCompra lineas articulos (indice + 1)
+            else
+                let
+                    articulo = head articuloArray
+                    nombre = getNombreArticulo articulo
+                    costo = getCostoArticulo articulo
+                    tipo = getTipoArticulo articulo
+                    tipoIVA = getTipoIVAArticulo articulo
+                in
+                    putStrLn ("\tCodigo: " ++ codigoArticulo)
+                    putStrLn ("\tNombre: " ++ nombre)
+                    putStrLn ("\tCosto: " ++ show costo)
+                    putStrLn ("\tTipo: " ++ show tipo)
+                    putStrLn ("Tipo IVA: " ++ show tipoIVA)
+                    putStrLn ("---------------------------------")
+                    mostrarArticulosOrdenCompra lineas articulos (indice + 1)
 
-buscarArticulo :: [Artículo] -> String -> Int -> Articulo
+buscarArticulo :: [Artículo] -> String -> Int -> [Articulo]
 buscarArticulo articulos codigoArticulo indice =
-    let
-        articulo <- articulos indice
-        codigoArticuloGuardado = getCodigoArticuloOrdenCompra articulo
+    if length articulos == 0 then
+        []
+    else
+        let
+            articulo <- articulos indice
+            codigoArticuloGuardado = getCodigoArticulo articulo
+        in
+            if codigoArticuloGuardado == codigoArticulo then
+                [articulo]
+            else
+                buscarArticulo articulos codigoArticulo (indice + 1)
+            
         
 
 buscarOrdenCompra :: Text -> [OrdenCompra] -> Int -> IO()

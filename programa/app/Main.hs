@@ -6,6 +6,7 @@ import Inicio.InformacionBodegas
 import Inicio.InformacionUsuarios
 import Operaciones.CargarMostrarArticulos
 import Operaciones.CrearOrdenCompra
+import Operaciones.Facturar
 import Vista.VistaPrograma
 
 main :: IO ()
@@ -18,10 +19,4 @@ main =
         print bodegas
         usuarios <- cargarDatosUsuarios
         print usuarios
-        articulos <- cargarArticulosDesdeJSON
-        print articulos
-        ordenesCompra <- cargarOrdenesDesdeJSON
-        print ordenesCompra
-        facturas <- cargarFacturas
-        print facturas
-        ejecutarMenuPrincipal empresa bodegas usuarios articulos ordenCompra facturas
+        ejecutarMenuPrincipal empresa bodegas usuarios articulos ordenesCompra facturas
