@@ -15,6 +15,10 @@ import Text.Read (readMaybe)
 import Data.Maybe (listToMaybe)
 import Data.List (find)
 
+{-
+Entradas: Nada
+Salidas: Los usuarios.
+-}
 cargarDatosUsuarios :: IO [Usuario]
 cargarDatosUsuarios = do
     cwd <- getCurrentDirectory
@@ -27,6 +31,10 @@ cargarDatosUsuarios = do
     else do
         return usuarios
 
+{-
+Entradas: Los usuarios creados. El indice.
+Salidas: Los usuarios creados.
+-}
 crearUsuarios :: [Usuario] -> Int -> IO [Usuario]
 crearUsuarios usuarios cantidad = do
     putStrLn ("Usuario " ++ show cantidad)
@@ -82,6 +90,10 @@ crearUsuarios usuarios cantidad = do
                 else
                     crearUsuarios usuarios' (cantidad + 1)
 
+{-
+Entradas: Los usuarios creados. El indice. La cedula a evaluar.
+Salidas: 1 si no hay coincidencias. 0 si hay coincidencias.
+-}
 verificarDuplicidadCedula :: [Usuario] -> Int -> Int -> Int
 verificarDuplicidadCedula usuarios indice cedula =
     if length usuarios == 0 then
@@ -99,7 +111,10 @@ verificarDuplicidadCedula usuarios indice cedula =
                 else
                     verificarDuplicidadCedula usuarios (indice + 1) cedula
 
-
+{-
+Entradas: Los usuarios a guardar.
+Salidas: El mensaje de éxito.
+-}
 guardarUsuarios :: [Usuario] -> IO ()
 guardarUsuarios bodegas = do
     let json = encode bodegas
@@ -108,7 +123,10 @@ guardarUsuarios bodegas = do
     B.writeFile direccion json
     putStrLn "\nSe ha guardado la información"
 
-
+{-
+Entradas: La dirección del archivo.
+Salidas: Los usuarios cargados desde el archivo JSON.
+-}
 readJSONFileUsers :: FilePath -> IO [Usuario]
 readJSONFileUsers direccion = do
     json <- B.readFile direccion
@@ -116,5 +134,9 @@ readJSONFileUsers direccion = do
         Left err -> error err
         Right bodegas -> return bodegas
 
+{-
+Entradas: El numero de cedula. Los usuarios existentes.
+Salidas: El usuario que coincide con la cédula.
+-}
 obtenerUsuarioPorCedula :: Int -> [Usuario] -> Maybe Usuario
 obtenerUsuarioPorCedula cedula = find (\ usuario -> getCedula usuario == cedula)

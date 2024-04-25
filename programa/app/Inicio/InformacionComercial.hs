@@ -11,6 +11,10 @@ import System.FilePath ((</>))
 import System.Directory (getCurrentDirectory)
 import System.IO
 
+{-
+Entradas: Nada
+Salidas: La empresa creada.
+-}
 cargarDatosEmpresa :: IO Empresa
 cargarDatosEmpresa =
     do
@@ -26,6 +30,10 @@ cargarDatosEmpresa =
                 let empresaGuardada = empresa !! 0
                 return empresaGuardada
 
+{-
+Entradas: Nada
+Salidas: La empresa creada.
+-}
 crearEmpresa :: IO Empresa
 crearEmpresa =
     do
@@ -45,6 +53,10 @@ crearEmpresa =
         guardarEmpresa empresa
         return (Empresa nombreEmpresa sitioWeb contacto)
 
+{-
+Entradas: La empresa a guardar.
+Salidas: El mensaje de éxito.
+-}
 guardarEmpresa :: Empresa -> IO()
 guardarEmpresa empresa =
     do
@@ -54,6 +66,10 @@ guardarEmpresa empresa =
         B.writeFile direccion json
         putStrLn "\nSe ha guardado la información"
 
+{-
+Entradas: La dirección de la base de datos de la empresa.
+Salidas: La empresa guardada.
+-}
 readJSONFileBusiness :: FilePath -> IO [Empresa]
 readJSONFileBusiness filePath = do
   fileContent <- B.readFile filePath

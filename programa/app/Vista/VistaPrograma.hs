@@ -15,6 +15,10 @@ import Operaciones.StockBodegas
 import Datas.Data
 import Data.Maybe
 
+{-
+Entradas: Nada
+Salidas: Nada
+-}
 ejecutarMenuPrincipal :: IO ()
 ejecutarMenuPrincipal =
     do
@@ -59,6 +63,10 @@ ejecutarMenuPrincipal =
             _   -> do putStrLn "Opcion no invalida"
                       ejecutarMenuPrincipal
 
+{-
+Entradas: Nada
+Salidas: Nada
+-}
 imprimirMenuPrincipal :: IO ()
 imprimirMenuPrincipal = do
     putStr "Menu principal\n1. Cargar y mostrar articulos"
@@ -70,6 +78,10 @@ imprimirMenuPrincipal = do
     putStr "\nSeleccione una opcion: "
     hFlush stdout
 
+{-
+Entradas: Nada
+Salidas: Nada
+-}
 ejecutarMenuExtra :: IO ()
 ejecutarMenuExtra =
     do
@@ -89,6 +101,10 @@ ejecutarMenuExtra =
             _   -> do putStrLn "Opcion no invalida"
                       ejecutarMenuExtra
 
+{-
+Entradas: Nada
+Salidas: Nada
+-}
 imprimirMenuExtra :: IO ()
 imprimirMenuExtra = do
     putStr "Menu Extra\n1. Crear Bodegas"

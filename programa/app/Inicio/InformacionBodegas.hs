@@ -16,6 +16,10 @@ import System.Directory (getCurrentDirectory)
 import System.IO
 import Text.Read (readMaybe)
 
+{-
+Entradas: Nada
+Salidas: Las bodegas recuperadas del archivo JSON.
+-}
 cargarDatosBodega :: IO [Bodega]
 cargarDatosBodega =
     do
@@ -29,6 +33,10 @@ cargarDatosBodega =
         else do
             return bodegas
 
+{-
+Entradas: El ID de la bodega a crear.
+Salidas: La lista de bodegas creadas.
+-}
 crearBodegas :: Int -> IO [Bodega]
 crearBodegas idActual = do
     putStrLn $ "\nBodega con Id " ++ show idActual
@@ -63,6 +71,10 @@ crearBodegas idActual = do
             restante <- crearBodegas (idActual + 1)
             return $ bodegaNueva : restante
 
+{-
+Entradas: La lista de bodegas a guardar.
+Salidas: El mensaje de éxito.
+-}
 guardarBodegas :: [Bodega] -> IO ()
 guardarBodegas bodegas = do
     let json = encode bodegas
@@ -71,12 +83,20 @@ guardarBodegas bodegas = do
     B.writeFile direccion json
     putStrLn "\nSe ha guardado la información"
 
+{-
+Entradas: La lista de bodegas a agregar.
+Salidas: El mensaje de éxito.
+-}
 anadirBodegas :: [Bodega] -> IO ()
 anadirBodegas nuevasBodegas = do
     bodegasExistentes <- cargarDatosBodega
     putStrLn "Añadiendo nuevas bodegas..."
     guardarBodegas (bodegasExistentes ++ nuevasBodegas)
 
+{-
+Entradas: La dirección de la base de datos de las bodegas.
+Salidas: La lista de bodegas extraídas.
+-}
 readJSONFileBusiness :: FilePath -> IO [Bodega]
 readJSONFileBusiness direccion = do
     json <- B.readFile direccion
@@ -84,6 +104,10 @@ readJSONFileBusiness direccion = do
         Left err -> error err
         Right bodegas -> return bodegas
 
+{-
+Entradas: El ID de la bodega. La lista de bodegas existentes.
+Salidas: La bodega encontrada.
+-}
 findBodega :: Int -> [Bodega] -> Maybe Bodega
 findBodega objetivo [] = Nothing
 findBodega objetivo (bodega:resto)
