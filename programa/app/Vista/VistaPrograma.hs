@@ -42,17 +42,20 @@ ejecutarMenuPrincipal =
                       putStrLn "Ingreso cargado:"
                       mostrarIngreso (fromMaybe (error "Fallo Ingreso") ingreso)
                       guardarIngreso (fromMaybe (error "Fallo Ingreso") ingreso)
-                      guardarBodegas (actualizarBodegas(getLineasIngreso (fromMaybe (error "Fallo Ingreso") ingreso)) bodegas)
+                      guardarBodegas (actualizarBodegas (getLineasIngreso (fromMaybe (error "Fallo Ingreso") ingreso)) bodegas)
                       ejecutarMenuPrincipal
             "3" -> do orden <- crearOrdenCompra usuarios
                       guardarOrdenCompraJSON (fromMaybe (error "Fallo Orden") orden)
                       ejecutarMenuPrincipal
-            "4" -> ejecutarMenuPrincipal--facturarOrdenCompra ordenesCompra bodegas empresa
+            "4" -> do --facturarOrdenCompra ordenesCompra bodegas empresa
+                      ejecutarMenuPrincipal
             "5" -> do verStockBodegas bodegas
                       ejecutarMenuPrincipal
             "6" -> do ejecutarMenuOpcionesGenerales
                       ejecutarMenuPrincipal
-            "7" -> putStrLn "\n\t***Hasta luego***"
+            "7" -> do ejecutarMenuExtra
+                      ejecutarMenuPrincipal
+            "8" -> putStrLn "\n\t***Hasta luego***"
             _   -> do putStrLn "Opcion no invalida"
                       ejecutarMenuPrincipal
 
@@ -62,7 +65,35 @@ imprimirMenuPrincipal = do
     hFlush stdout
     putStr "\t2. Cargar y mostrar ingresos de inventario\n3. Crear orden de compra"
     hFlush stdout
-    putStr "\t4. Facturar\n5. Ver stock de bodegas\t\t6. Opciones generales\n7. Salir"
+    putStr "\t4. Facturar\n5. Ver stock de bodegas\t\t6. Opciones generales\n7. Opciones extras\t\t8. Salir"
+    hFlush stdout
+    putStr "\nSeleccione una opcion: "
+    hFlush stdout
+
+ejecutarMenuExtra :: IO ()
+ejecutarMenuExtra =
+    do
+        bodegas <- cargarDatosBodega
+        imprimirMenuExtra
+        opcion <- getLine
+        case opcion of
+            "1" -> do nuevos <- crearBodegas (length bodegas)
+                      anadirBodegas nuevos
+                      ejecutarMenuExtra
+            "2" -> do putStrLn "Ingrese la indentificacion del ingreso:"
+                      codigo <- getLine
+                      ingresos <- cargarIngresosDesdeJSON
+                      mostrarLineasPorCodigo codigo ingresos
+                      ejecutarMenuExtra
+            "3" -> putStrLn "\nVolviendo..."
+            _   -> do putStrLn "Opcion no invalida"
+                      ejecutarMenuExtra
+
+imprimirMenuExtra :: IO ()
+imprimirMenuExtra = do
+    putStr "Menu Extra\n1. Crear Bodegas"
+    hFlush stdout
+    putStr "\t2. Consultar Ingreso\n3. Volver"
     hFlush stdout
     putStr "\nSeleccione una opcion: "
     hFlush stdout

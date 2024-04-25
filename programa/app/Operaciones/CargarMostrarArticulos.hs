@@ -9,6 +9,7 @@ module Operaciones.CargarMostrarArticulos(
 ) where
 
 import System.IO
+import Text.Printf
 import Data.Aeson
 import qualified Data.ByteString.Lazy as B
 import Datas.Data
@@ -42,12 +43,22 @@ splitComa "" = [""]
 splitComa (',':xs) = "" : splitComa xs
 splitComa (x:xs) = let (y:ys) = splitComa xs in (x:y) : ys
 
+mostrarArticulo :: Articulo -> IO ()
+mostrarArticulo articulo = do
+    putStrLn "==============================="
+    printf "Código: %s\n" (codigoArticulo articulo)
+    printf "Nombre: %s\n" (nombreArticulo articulo)
+    printf "Costo: %.2f\n" (costoArticulo articulo)
+    printf "Tipo: %s\n" (show $ tipoArticulo articulo)
+    printf "Tipo de IVA: %s\n" (show $ tipoIVAArticulo articulo)
+    putStrLn "==============================="
+
 {-
 Entradas: La lista de articulos.
 Salidas: La impresion de todos los articulos.
 -}
 mostrarArticulos :: [Articulo] -> IO ()
-mostrarArticulos articulos = mapM_ print articulos
+mostrarArticulos = mapM_ mostrarArticulo
 
 {-
 Entradas: La lista de articulos a guardar en el JSON.

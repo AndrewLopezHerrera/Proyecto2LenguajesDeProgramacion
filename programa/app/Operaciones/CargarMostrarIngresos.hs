@@ -2,7 +2,9 @@ module Operaciones.CargarMostrarIngresos(
     cargarIngreso,
     mostrarIngreso,
     guardarIngreso,
-    consultarIngresoPorCodigo
+    consultarIngresoPorCodigo,
+    cargarIngresosDesdeJSON,
+    mostrarLineasPorCodigo
 ) where
 
 import Data.Aeson
@@ -31,6 +33,7 @@ cargarIngreso idUsuario fileName articulosExistentes bodegasExistentes usuarios 
             tiempo <- fmap (formatTime defaultTimeLocale "%Y%m%d%H%M%S") getCurrentTime
             contenido <- readFile ("app\\Operaciones\\Archivos\\" ++ fileName)
             let lineasIngreso = map (parseLineaIngreso articulosExistentes bodegasExistentes) (lines contenido)
+            putStrLn $ "ID de Ingreso Generado: "(idUsuario ++ "_" ++ tiempo)
             return $ Just $ Ingreso (idUsuario ++ "_" ++ tiempo) idUsuario tiempo lineasIngreso
         Nothing -> do
             putStrLn "El idUsuario especificado no existe."
@@ -89,7 +92,12 @@ mostrarIngreso ingreso = do
     putStrLn $ "ID de usuario: " ++ idUsuario ingreso
     putStrLn $ "Fecha: " ++ fecha ingreso
     putStrLn "Lineas de ingreso:"
-    mapM_ print (lineasIngreso ingreso)
+    mapM_ mostrarLineaIngreso (lineasIngreso ingreso)
+    putStrLn ""
+
+mostrarLineaIngreso :: LineaIngreso -> IO ()
+mostrarLineaIngreso linea =
+    putStrLn $ "> Código: " ++ codigoLineaIngreso linea ++ "\t" ++ "Cantidad: " ++ show (cantidad linea)
 
 {-
 Entradas: El codigo del ingreso a buscar. La lista de ingresos que hubieron.

@@ -1,5 +1,5 @@
 module Operaciones.Facturar (
-    --facturarOrdenCompra,
+    facturarOrdenCompra,
     anadirFactura,
     cargarFacturas,
     mostrarFactura,
@@ -47,9 +47,10 @@ guardarFacturas facturas = do
   B.writeFile direccion json
   putStrLn "\nSe ha guardado la factura"
 
-{-
+
 buscarArticulo :: String -> [Articulo] -> Maybe Articulo
 buscarArticulo codigo = find (\articulo -> codigoArticulo articulo == codigo)
+
 verificarStock :: [(Bodega, Int)] -> [(Articulo, Int)] -> Bool
 verificarStock _ [] = True
 verificarStock bodegas ((articulo, cantidad):resto) =
@@ -58,6 +59,7 @@ verificarStock bodegas ((articulo, cantidad):resto) =
             let stockTotal = sum $ map snd bodegas
             in ((stockTotal >= cantidad) && verificarStock bodegas resto)
         Nothing -> False
+
 descontarStock :: [(Bodega, Int)] -> [(Articulo, Int)] -> [(Bodega, Int)]
 descontarStock bodegas [] = bodegas
 descontarStock bodegas ((articulo, cantidad):resto) =
@@ -69,10 +71,13 @@ descontarStock bodegas ((articulo, cantidad):resto) =
     in if cantidadDescontada > 0
         then descontarStock ((bodegaActualizada, stockBodega - cantidadDescontada) : tail bodegas) ((articulo, cantidad - cantidadDescontada) : resto)
         else descontarStock (tail bodegas) ((articulo, cantidad) : resto)
+
 calcularSubtotal :: [ArticuloFactura] -> Double
 calcularSubtotal articulos = sum $ map getSubTotalArticuloFactura articulos
+
 calcularTotal :: [ArticuloFactura] -> Double
 calcularTotal articulos = sum $ map getTotalArticuloFactura articulos
+
 facturarOrdenCompra :: [OrdenCompra] -> [Bodega] -> Empresa -> IO ()
 facturarOrdenCompra ordenesCompra bodegas empresa = do
     putStr "Ingrese el código de la orden de compra: "
@@ -121,7 +126,7 @@ facturar ordenCompra bodegas usuario empresa = do
             let subtotal = calcularSubtotal lineasFactura
             let total = calcularTotal lineasFactura
             return $ Just $ Factura idFactura usuario empresa "Activo" tiempoActual lineasFactura subtotal total
--}
+
 mostrarFactura :: Factura -> IO ()
 mostrarFactura factura = do
     putStrLn "Información de la factura:"
