@@ -42,14 +42,21 @@ ejecutarMenuPrincipal =
                       ruta <- getLine
                       putStrLn "Ingrese la indentificacion que realiza el ingreso:"
                       user <- getLine
-                      ingreso <- cargarIngreso user ruta articulos bodegas usuarios
-                      putStrLn "Ingreso cargado:"
-                      mostrarIngreso (fromMaybe (error "Fallo Ingreso") ingreso)
-                      guardarIngreso (fromMaybe (error "Fallo Ingreso") ingreso)
-                      guardarBodegas (actualizarBodegas (getLineasIngreso (fromMaybe (error "Fallo Ingreso") ingreso)) bodegas)
+                      maybeIngreso <- cargarIngreso user ruta articulos bodegas usuarios
+                      case maybeIngreso of
+                            Just ingreso -> do
+                                putStrLn "Ingreso cargado:"
+                                mostrarIngreso ingreso
+                                guardarIngreso ingreso
+                                let nuevasBodegas = actualizarBodegas (getLineasIngreso ingreso) bodegas
+                                guardarBodegas nuevasBodegas
+                            Nothing -> putStrLn "Fallo al cargar el ingreso. No se ejecutarán los programas."
                       ejecutarMenuPrincipal
-            "3" -> do orden <- crearOrdenCompra usuarios
-                      guardarOrdenCompraJSON (fromMaybe (error "Fallo Orden") orden)
+            "3" -> do maybeOrden <- crearOrdenCompra usuarios
+                      case maybeOrden of
+                            Just orden -> do
+                                guardarOrdenCompraJSON orden
+                            Nothing -> putStrLn "Fallo al crear la orden. No se ejecutarán los programas."
                       ejecutarMenuPrincipal
             "4" -> do facturacion ordenesCompra bodegas usuarios empresa articulos
                       ejecutarMenuPrincipal
