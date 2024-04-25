@@ -60,6 +60,9 @@ import Data.Aeson
 import Data.Text (Text, pack)
 import Data.Time
 
+{-
+Maneja la información de la empresa que se crea, puede ser instanciada a JSON.
+-}
 data Empresa =
     Empresa { nombreEmpresa  :: !Text,
     sitioWeb :: !Text,
@@ -78,6 +81,10 @@ getSitioWeb (Empresa _ sitioWeb _) = sitioWeb
 getContacto :: Empresa -> Text
 getContacto (Empresa _ _ contacto) = contacto
 
+{-
+Contiene la información de las bodegas de la empresa, además guarda los artículos que se le asignan.
+Puede ser instanciado a JSON.
+-}
 data Bodega = 
     Bodega {
         idBodega :: Int,
@@ -101,6 +108,10 @@ getUbicacion (Bodega _ _ ubicacion _) = ubicacion
 getStock :: Bodega -> [LineaIngreso]
 getStock (Bodega _ _ _ stock) = stock
 
+{-
+Contiene los datos de los usuarios que utilizan el programa.
+Puede ser instanciado a JSON.
+-}
 data Usuario = 
     Usuario{
         cedula :: Int,
@@ -128,16 +139,25 @@ getSegundoApellido (Usuario _ _ _ segundoApellido _) = segundoApellido
 getPuesto :: Usuario -> Text
 getPuesto (Usuario _ _ _ _ puesto) = puesto
 
+{-
+El tipo de artículo. Puede ser instancia a JSON.
+-}
 data Tipo = ENL | GBA | FRU | CON | VEG deriving (Show, Read, Eq, Generic)
 
 instance FromJSON Tipo
 instance ToJSON Tipo
 
+{-
+El tipo IVA del artículo. Puede ser instancia a JSON.
+-}
 data TipoIVA = REG | ESP deriving (Show, Read, Eq, Generic)
 
 instance FromJSON TipoIVA
 instance ToJSON TipoIVA
 
+{-
+El artículo del inventario. Puede ser instanciado a JSON.
+-}
 data Articulo = Articulo { codigoArticulo :: String
                          , nombreArticulo :: String
                          , costoArticulo :: Double
@@ -148,6 +168,9 @@ data Articulo = Articulo { codigoArticulo :: String
 instance FromJSON Articulo
 instance ToJSON Articulo
 
+{-
+El ingreso de artículos que hace el usuario al sistema. Puede ser instanciado a JSON.
+-}
 data Ingreso = Ingreso { codigoIngreso :: String
                        , idUsuario :: String
                        , fecha :: String
@@ -160,6 +183,9 @@ instance ToJSON Ingreso
 getLineasIngreso :: Ingreso -> [LineaIngreso]
 getLineasIngreso (Ingreso _ _ _ lineas) = lineas
 
+{-
+La línea que dice cuantos productos se ingresan por artículo. Puede ser instanciado a JSON.
+-}
 data LineaIngreso = LineaIngreso { codigoLineaIngreso :: String
                                  , identificadorBodega :: String
                                  , cantidad :: Int
@@ -177,6 +203,9 @@ getIdentificadorBodegaLineaIngreso (LineaIngreso _ identificadorBodega _) = iden
 getCantidadLineaIngreso :: LineaIngreso -> Int
 getCantidadLineaIngreso (LineaIngreso _ _ cantidad) = cantidad
 
+{-
+La orden de compra que puede crear un cliente. Puede ser instanciado a JSON.
+-}
 data OrdenCompra = OrdenCompra { idOrden :: String
                                , cedulaClienteOrden :: String
                                , nombreClienteOrden :: String
@@ -202,6 +231,9 @@ getFechaOrdenCompra (OrdenCompra _ _ _ fecha _) = fecha
 getLineasOrdenCompra :: OrdenCompra -> [LineaOrdenCompra]
 getLineasOrdenCompra (OrdenCompra _ _ _ _ lineas) = lineas
 
+{-
+El artículo presente en la orden de compra. Puede ser instanciado a JSON.
+-}
 data LineaOrdenCompra = LineaOrdenCompra { codigoLineaOrden :: String
                                          , cantidadLineaOrden :: Int
                                          } deriving (Show, Generic)
@@ -215,6 +247,9 @@ getCodigoArticuloOrdenCompra (LineaOrdenCompra codigoArticulo _) = codigoArticul
 getCantidadArticuloOrdenCompra :: LineaOrdenCompra -> Int
 getCantidadArticuloOrdenCompra (LineaOrdenCompra _ cantidad) = cantidad
 
+{-
+La factura que se realiza. Puede ser instanciado a JSON.
+-}
 data Factura =
     Factura{
         idFactura :: String,
@@ -257,6 +292,9 @@ getFechaFactura = fechaHoraFactura
 getArticulosFactura :: Factura -> [ArticuloFactura]
 getArticulosFactura = lineasFactura
 
+{-
+Los artículos que van en la factura. Puede ser instanciado a JSON.
+-}
 data ArticuloFactura =
     ArticuloFactura{
         codigoArticuloFactura :: String,
