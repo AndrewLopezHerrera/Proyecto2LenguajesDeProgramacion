@@ -1,1 +1,1 @@
-# Proyecto2-LenguajesDeProgramaci-n
+# Proyecto2LenguajesDeProgramacion
