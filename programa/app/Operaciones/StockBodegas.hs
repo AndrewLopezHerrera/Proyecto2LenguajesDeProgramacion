@@ -5,6 +5,7 @@ module Operaciones.StockBodegas(
 
 import System.IO
 import Datas.Data
+import Text.Printf
 
 actualizarBodegas :: [LineaIngreso] -> [Bodega] -> [Bodega]
 actualizarBodegas [] bodegas = bodegas
@@ -36,8 +37,11 @@ verStockBodegas bodegas = mapM_ mostrarStockBodega bodegas
 
 mostrarStockBodega :: Bodega -> IO ()
 mostrarStockBodega bodega = do
-    putStrLn $ "Bodega\nID: " ++ show (idBodega bodega)
-    putStrLn "Stock:"
+    putStrLn "==============================="
+    printf "ID de Bodega: %d\n" (idBodega bodega)
+    printf "Capacidad: %.2f\n" (capacidad bodega)
+    printf "Ubicación: %s\n" (show $ ubicacion bodega)
+    putStrLn "Stock de la Bodega:"
     mapM_ mostrarLineaStock (stock bodega)
     putStrLn ""
 

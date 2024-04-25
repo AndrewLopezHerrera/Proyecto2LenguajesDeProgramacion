@@ -3,6 +3,7 @@ module Operaciones.OpcionesGenerales
 where
 
 import Data.Text (Text, pack)
+import Text.Printf
 import System.IO
 import Inicio.InformacionComercial
 import Inicio.InformacionBodegas

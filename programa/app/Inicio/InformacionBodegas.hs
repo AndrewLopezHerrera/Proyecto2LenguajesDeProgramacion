@@ -1,7 +1,9 @@
 module Inicio.InformacionBodegas(
     cargarDatosBodega,
     findBodega,
-    guardarBodegas
+    guardarBodegas,
+    anadirBodegas,
+    crearBodegas
 ) where
 
 import Data.Aeson
@@ -26,7 +28,6 @@ cargarDatosBodega =
             return bodegasNuevas
         else do
             return bodegas
-
 
 crearBodegas :: Int -> IO [Bodega]
 crearBodegas idActual = do
@@ -70,6 +71,11 @@ guardarBodegas bodegas = do
     B.writeFile direccion json
     putStrLn "\nSe ha guardado la información"
 
+anadirBodegas :: [Bodega] -> IO ()
+anadirBodegas nuevasBodegas = do
+    bodegasExistentes <- cargarDatosBodega
+    putStrLn "Añadiendo nuevas bodegas..."
+    guardarBodegas (bodegasExistentes ++ nuevasBodegas)
 
 readJSONFileBusiness :: FilePath -> IO [Bodega]
 readJSONFileBusiness direccion = do
