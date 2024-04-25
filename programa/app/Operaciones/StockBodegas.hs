@@ -7,6 +7,10 @@ import System.IO
 import Datas.Data
 import Text.Printf
 
+{-
+Entradas: Los artículos que se desean actualizar. Las bodegas.
+Salidas: Las bodegas actualizadas.
+-}
 actualizarBodegas :: [LineaIngreso] -> [Bodega] -> [Bodega]
 actualizarBodegas [] bodegas = bodegas
 actualizarBodegas (linea:lineas) bodegas =
@@ -14,6 +18,10 @@ actualizarBodegas (linea:lineas) bodegas =
         bodegasActualizadas = actualizarBodega (read idBodega) linea bodegas
     in actualizarBodegas lineas bodegasActualizadas
 
+{-
+Entradas: El ID de la bodega. La linea que se desea actualizar. La lista de bodegas.
+Salidas: La lista de bodegas actualizada.
+-}
 actualizarBodega :: Int -> LineaIngreso -> [Bodega] -> [Bodega]
 actualizarBodega _ _ [] = []
 actualizarBodega idBodega nuevaLinea (bodega:bodegas) =
@@ -23,6 +31,10 @@ actualizarBodega idBodega nuevaLinea (bodega:bodegas) =
     else
         bodega : actualizarBodega idBodega nuevaLinea bodegas
 
+{-
+Entradas: La lista de artículos a actualizar. La nueva línea a agregar.
+Salidas: La lista de artículos actualizada.
+-}
 actualizarStock :: [LineaIngreso] -> LineaIngreso -> [LineaIngreso]
 actualizarStock [] nuevaLinea = [nuevaLinea]
 actualizarStock (l:ls) nuevaLinea =
@@ -31,10 +43,18 @@ actualizarStock (l:ls) nuevaLinea =
     else
         l : actualizarStock ls nuevaLinea
 
+{-
+Entradas: La lista de bodegas.
+Salidas: La información del stock.
+-}
 verStockBodegas :: [Bodega] -> IO ()
 verStockBodegas [] = putStrLn "No hay bodegas disponibles."
 verStockBodegas bodegas = mapM_ mostrarStockBodega bodegas
 
+{-
+Entradas: Una bodega
+Salidas: La información del stock que se encuentra en esa bodega.
+-}
 mostrarStockBodega :: Bodega -> IO ()
 mostrarStockBodega bodega = do
     putStrLn "==============================="
@@ -45,5 +65,9 @@ mostrarStockBodega bodega = do
     mapM_ mostrarLineaStock (stock bodega)
     putStrLn ""
 
+{-
+Entradas: Un artículo
+Salidas: La información de ese stock.
+-}
 mostrarLineaStock :: LineaIngreso -> IO ()
 mostrarLineaStock linea = putStrLn $ "Codigo: " ++ getCodigoArticuloLineaIngreso linea ++ ", Cantidad: " ++ show (cantidad linea)
