@@ -55,12 +55,12 @@ consultarOrdenCompra = do
 consultarFactura :: IO ()
 consultarFactura = do
     putStrLn "Ingrese el ID de la factura a consultar:"
-    idFactura <- getLine
+    id <- getLine
     facturas <- cargarFacturas
-    let factura = find (\factura -> getIdFactura factura == idFactura) facturas
+    let factura = find (\factura -> getIdFactura factura == id) facturas
     case factura of
         Just fac -> mostrarFactura fac
-        Nothing -> putStrLn $ "No se encontró ninguna factura con el ID '" ++ idFactura ++ "'."
+        Nothing -> putStrLn $ "No se encontró ninguna factura con el ID '" ++ id ++ "'."
 
 retornarMercaderia :: [Factura] -> [Bodega] -> IO ([Factura], [Bodega])
 retornarMercaderia facturas bodegas = do

@@ -19,7 +19,7 @@
     "idOrden": "302220976_20240424173147",
     "lineasCompra": [
       { "cantidadLineaOrden": 10, "codigoLineaOrden": "003" },
-      { "cantidadLineaOrden": 60, "codigoLineaOrden": "001" }
+      { "cantidadLineaOrden": 20, "codigoLineaOrden": "001" }
     ],
     "nombreClienteOrden": "Fer"
   }

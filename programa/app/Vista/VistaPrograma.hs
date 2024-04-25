@@ -47,7 +47,7 @@ ejecutarMenuPrincipal =
             "3" -> do orden <- crearOrdenCompra usuarios
                       guardarOrdenCompraJSON (fromMaybe (error "Fallo Orden") orden)
                       ejecutarMenuPrincipal
-            "4" -> do --facturarOrdenCompra ordenesCompra bodegas empresa
+            "4" -> do facturacion ordenesCompra bodegas usuarios empresa articulos
                       ejecutarMenuPrincipal
             "5" -> do verStockBodegas bodegas
                       ejecutarMenuPrincipal
