@@ -15,6 +15,10 @@ import Datas.Data
 import Data.List
 import Data.Maybe (Maybe(Nothing),isJust, fromJust)
 
+{-
+Entradas: Nada
+Salidas: Nada
+-}
 ejecutarMenuOpcionesGenerales :: IO ()
 ejecutarMenuOpcionesGenerales = do
     bodegas <- cargarDatosBodega
@@ -35,6 +39,10 @@ ejecutarMenuOpcionesGenerales = do
         _ -> do putStrLn "\nOpción incorrecta.\n"
                 ejecutarMenuOpcionesGenerales
 
+{-
+Entradas: Nada
+Salidas: Nada
+-}
 imprimirMenuOpcionesGenerales :: IO()
 imprimirMenuOpcionesGenerales = do
     putStr "\t\tOpciones Generales\n\t1. Consultar orden compra\n\t2. Consultar factura"
@@ -42,6 +50,10 @@ imprimirMenuOpcionesGenerales = do
     putStr "\n\t3. Retornar mercadería\n\t4. Volver\nSeleccione un opción"
     hFlush stdout
 
+{-
+Entradas: Nada
+Salidas: La información de la orden de compra.
+-}
 consultarOrdenCompra :: IO ()
 consultarOrdenCompra = do
     putStrLn "Ingrese el ID de la orden de compra a consultar:"
@@ -52,6 +64,10 @@ consultarOrdenCompra = do
         Just ord -> mostrarOrdenCompra ord
         Nothing -> putStrLn $ "No se encontró ninguna orden de compra con el ID '" ++ idOrden ++ "'."
 
+{-
+Entradas: Nada
+Salidas: La información de la factura.
+-}
 consultarFactura :: IO ()
 consultarFactura = do
     putStrLn "Ingrese el ID de la factura a consultar:"
@@ -62,6 +78,10 @@ consultarFactura = do
         Just fac -> mostrarFactura fac
         Nothing -> putStrLn $ "No se encontró ninguna factura con el ID '" ++ idFactura ++ "'."
 
+{-
+Entradas: La lista de facturas
+Salidas: Una tupla con la lista de facturas y la bodegas actualizadas.
+-}
 retornarMercaderia :: [Factura] -> [Bodega] -> IO ([Factura], [Bodega])
 retornarMercaderia facturas bodegas = do
     putStr "Ingrese el código de la factura: "
@@ -77,6 +97,10 @@ retornarMercaderia facturas bodegas = do
             putStrLn "La factura ingresada no existe o no está activa."
             retornarMercaderia facturas bodegas
 
+{-
+Entradas: La lista de artículos. La lista de bodegas.
+Salidas: Las bodegas actualizadas.
+-}
 actualizarStock :: [ArticuloFactura] -> [Bodega] -> [Bodega]
 actualizarStock [] bodegas = bodegas
 actualizarStock (articulo:articulos) bodegas =
@@ -85,6 +109,10 @@ actualizarStock (articulo:articulos) bodegas =
                        in bodega { stock = stockActualizado } : actualizarStock articulos bodegas
         Nothing -> actualizarStock articulos bodegas
 
+{-
+Entradas: El código del artículo a buscar. La lista de bodegas.
+Salidas: La bodega en la que se encuentra la bodega.
+-}
 findBodegaDeArticulo :: Text -> [Bodega] -> Maybe Bodega
 findBodegaDeArticulo codigoArticulo [] = Nothing
 findBodegaDeArticulo codigoArticulo (bodega:bodegas) =
@@ -92,6 +120,11 @@ findBodegaDeArticulo codigoArticulo (bodega:bodegas) =
         then Just bodega
         else findBodegaDeArticulo codigoArticulo bodegas
 
+{-
+Entradas: El código del artículo a retornar. La cantidad a retornar. La lista de los artículos a
+retornar.
+Salidas: Los artículos actualizados.
+-}
 sumarStock :: Text -> Int -> [LineaIngreso] -> [LineaIngreso]
 sumarStock codigoArticulo cantidad [] = [LineaIngreso (textTostring codigoArticulo) "" cantidad]
 sumarStock codigoArticulo cantidad (linea:lineas) =
