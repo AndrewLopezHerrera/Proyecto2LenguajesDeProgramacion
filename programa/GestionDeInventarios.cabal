@@ -56,14 +56,17 @@ common warnings
 
 executable GestionDeInventarios
     other-modules:
-        Datas.Data
-        Inicio.InformacionComercial
-        Inicio.InformacionBodegas
-        Inicio.InformacionUsuarios
-        Operaciones.CargarMostrarArticulos
-        Operaciones.CrearOrdenCompra
-        Operaciones.Facturar
-        Vista.VistaPrograma
+        Datas.Data,
+        Inicio.InformacionComercial,
+        Inicio.InformacionBodegas,
+        Inicio.InformacionUsuarios,
+        Operaciones.CargarMostrarArticulos,
+        Operaciones.CrearOrdenCompra,
+        Operaciones.Facturar,
+        Vista.VistaPrograma,
+        Operaciones.CargarMostrarIngresos,
+        Operaciones.OpcionesGenerales,
+        Operaciones.StockBodegas
 
     -- Import common warning flags.
     import:           warnings
