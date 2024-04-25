@@ -1,5 +1,5 @@
 module Operaciones.Facturar (
-    facturarOrdenCompra,
+    facturacion,
     anadirFactura,
     cargarFacturas,
     mostrarFactura,
@@ -19,8 +19,10 @@ import System.Directory (getCurrentDirectory)
 import System.FilePath ((</>))
 import System.IO
 import Text.Read (readMaybe)
-import Data.Time.Clock.POSIX (getPOSIXTime)
+import Data.Time.Clock (getCurrentTime)
 import Data.ByteString (unpack)
+import Inicio.InformacionUsuarios
+import Inicio.InformacionBodegas
 
 {-
 Entradas: Una factura
@@ -43,9 +45,8 @@ cargarFacturas = do
   let direccion = cwd </> "app\\BasesDeDatos\\Facturas.json"
   fileContent <- B.readFile direccion
   case eitherDecode fileContent of
-    Left err -> do
-      return []
-    Right factura -> return [factura]
+    Left err -> error err
+    Right facturas -> return facturas
 
 {-
 Entradas: La lista de facturas a guardar.
@@ -60,112 +61,107 @@ guardarFacturas facturas = do
   putStrLn "\nSe ha guardado la factura"
 
 {-
-Entradas: El código del artículo. La lista de los artículos.
-Salidas: El artículo encontrado
--}
-buscarArticulo :: String -> [Articulo] -> Maybe Articulo
-buscarArticulo codigo = find (\articulo -> codigoArticulo articulo == codigo)
-
-{-
 Entradas: Una lista de tuplas de bodega e ID. Una lista de tuplas de artículos e ID.
 Salidas: True si hay suficiente stock, False si no lo hay.
 -}
-verificarStock :: [(Bodega, Int)] -> [(Articulo, Int)] -> Bool
+verificarStock :: [(Bodega, Double)] -> [(String, Int)] -> Bool
 verificarStock _ [] = True
-verificarStock bodegas ((articulo, cantidad):resto) =
-    case buscarArticulo (codigoArticulo articulo) (map fst bodegas >>= stock) of
-        Just (LineaIngreso _ _ stockArticulo) ->
-            let stockTotal = sum $ map snd bodegas
-            in ((stockTotal >= cantidad) && verificarStock bodegas resto)
-        Nothing -> False
+verificarStock [] _ = False
+verificarStock ((bodega, capacidadBodega):restoBodegas) ((codigoArticulo, cantidad):restoArticulos)
+    | cantidad <= stockArticulo = verificarStock restoBodegas restoArticulos
+    | otherwise = False
+    where
+        stockArticulo = sum [getCantidadLineaIngreso ingreso | ingreso <- stock bodega, getCodigoArticuloLineaIngreso ingreso == codigoArticulo]
 
 {-
 Entradas: Una lista de tuplas de bodega e ID. Una lista de tuplas de artículos e ID.
 Salidas: La lista de tuplas bodega e ID actualizado.
 -}
-descontarStock :: [(Bodega, Int)] -> [(Articulo, Int)] -> [(Bodega, Int)]
-descontarStock bodegas [] = bodegas
-descontarStock bodegas ((articulo, cantidad):resto) =
-    let (bodega, stockBodega) = head bodegas
-        Just (LineaIngreso _ _ stockArticulo) = buscarArticulo (codigoArticulo articulo) (stock bodega)
-        cantidadDescontada = min cantidad stockBodega
-        nuevoStock = stockBodega - cantidadDescontada
-        bodegaActualizada = bodega { stock = filter (\linea -> getCodigoArticuloLineaIngreso linea /= codigoArticulo articulo) (stock bodega) }
-    in if cantidadDescontada > 0
-        then descontarStock ((bodegaActualizada, stockBodega - cantidadDescontada) : tail bodegas) ((articulo, cantidad - cantidadDescontada) : resto)
-        else descontarStock (tail bodegas) ((articulo, cantidad) : resto)
+descontarStock :: [(Bodega, Double)] -> [(String, Int)] -> [(Bodega, Double)]
+descontarStock [] _ = []
+descontarStock _ [] = []
+descontarStock ((bodega, capacidadBodega):restoBodegas) ((codigoArticulo, cantidad):restoArticulos) =
+    (bodegaActualizada, capacidadBodega) : descontarStock restoBodegas restoArticulos
+    where
+        stockActualizado = descontarArticuloStock (stock bodega) codigoArticulo cantidad
+        bodegaActualizada = bodega { stock = stockActualizado }
+
+descontarArticuloStock :: [LineaIngreso] -> String -> Int -> [LineaIngreso]
+descontarArticuloStock [] _ _ = []
+descontarArticuloStock (ingreso:restoStock) codigoArticulo cantidad
+    | cantidad <= cantidadStock = nuevaLineaIngreso : restoStock
+    | otherwise = descontarArticuloStock restoStock codigoArticulo (cantidad - cantidadStock)
+    where
+        cantidadStock = getCantidadLineaIngreso ingreso
+        nuevaCantidadStock = cantidadStock - cantidad
+        nuevaLineaIngreso = ingreso { cantidad = nuevaCantidadStock }
+
+{-
+Entradas: El código del artículo. La lista de los artículos.
+Salidas: El artículo encontrado
+-}
+buscarArticuloPorCodigo :: String -> [Articulo] -> Maybe Articulo
+buscarArticuloPorCodigo _ [] = Nothing
+buscarArticuloPorCodigo codigo (articulo:restoArticulos)
+    | codigoArticulo articulo == codigo = Just articulo
+    | otherwise = buscarArticuloPorCodigo codigo restoArticulos
 
 {-
 Entradas: La lista de artículos de la factura.
 Salidas: El subtotal de el precio global.
 -}
 calcularSubtotal :: [ArticuloFactura] -> Double
-calcularSubtotal articulos = sum $ map getSubTotalArticuloFactura articulos
+calcularSubtotal = sum . map subTotalArticuloFactura
 
 {-
 Entradas: La lista de artículos.
 Salidas: El total de todos los artículos.
 -}
 calcularTotal :: [ArticuloFactura] -> Double
-calcularTotal articulos = sum $ map getTotalArticuloFactura articulos
+calcularTotal = sum . map getTotalArticuloFactura
 
-{-
-Entradas: Una lista de las ordenes de compra. La lista de bodegas. La empresa.
-Salidas: La información de éxito.
--}
-facturarOrdenCompra :: [OrdenCompra] -> [Bodega] -> Empresa -> IO ()
-facturarOrdenCompra ordenesCompra bodegas empresa = do
-    putStr "Ingrese el código de la orden de compra: "
-    hFlush stdout
-    codigoOrdenCompra <- getLine
-    putStrLn $ "Facturando orden de compra con código: " ++ codigoOrdenCompra
-    let maybeOrden = find (\orden -> getIdOrdenCompra orden == codigoOrdenCompra) ordenesCompra
-    case maybeOrden of
-        Just orden -> do
-            let usuario = obtenerUsuarioPorCedula (getCedulaClienteOrdenCompra orden) usuarios
-            case usuario of
-                Just u -> do
-                    facturas <- cargarFacturas
-                    let (newFactura, newBodegas) = fromMaybe (Nothing, bodegas) $ facturar codigoOrdenCompra orden bodegas u empresa
-                    case newFactura of
-                        Just factura -> do
-                            guardarFacturas (factura : facturas)
-                            putStrLn "La orden de compra ha sido facturada exitosamente."
-                        Nothing -> putStrLn "No fue posible facturar la orden de compra debido a la falta de stock."
-                Nothing -> putStrLn "No se encontró ningún usuario asociado a la orden de compra."
-        Nothing -> putStrLn "No se encontró ninguna orden de compra con el código especificado."
+buscarOrdenPorId :: String -> [OrdenCompra] -> Maybe OrdenCompra
+buscarOrdenPorId idOrden = find (\orden -> getIdOrdenCompra orden == idOrden)
+
+obtenerBodegas :: [(Bodega, Double)] -> [Bodega]
+obtenerBodegas = map fst
 
 {-
 Entradas: La orden de compra a facturar. Las bodegas que contienen los artículos. El usuario que
 realizará la facturación. La empresas que realiza la facturación.
 Salidas: La factura creada.
 -}
-facturar :: OrdenCompra -> [Bodega] -> Usuario -> Empresa -> IO (Maybe Factura)
-facturar ordenCompra bodegas usuario empresa = do
+facturar :: OrdenCompra -> [Bodega] -> Usuario -> Empresa -> [Articulo] -> IO (Maybe Factura)
+facturar ordenCompra bodegas usuario empresa guarArticulos = do
     let lineasOrdenCompra = lineasCompra ordenCompra
-    let articulos = map (\linea -> (fromMaybe "" (getCodigoArticuloOrdenCompra linea), getCantidadArticuloOrdenCompra linea)) lineasOrdenCompra
-    let bodegasConStock = filter (\bodega -> verificarStock [(bodega, getCapacidad bodega)] articulos) bodegas
+    let articulos = map (\linea -> (codigoLineaOrden linea, cantidadLineaOrden linea)) lineasOrdenCompra
+    let bodegasConStock = filter (\bodega -> verificarStock [(bodega, capacidad bodega)] articulos) bodegas
     if null bodegasConStock
         then do
             putStrLn "No hay suficiente stock para facturar esta orden de compra."
             return Nothing
         else do
-            let bodegasActualizadas = descontarStock (map (\bodega -> (bodega, getCapacidad bodega)) bodegasConStock) articulos
-            idFactura <- "FACT_" ++ idOrden ordenCompra
-            tiempoActual <- show <$> getPOSIXTime
-            let lineasFactura = map (\(articulo, cantidad) ->
-                    ArticuloFactura
-                        (codigoArticulo articulo)
-                        (nombreArticulo articulo)
-                        cantidad
-                        (costoArticulo articulo)
-                        (tipoArticulo articulo)
-                        (tipoIVAArticulo articulo)
-                        (fromIntegral cantidad * costoArticulo articulo)
-                    ) articulos
+            let bodegasActualizadas = descontarStock (map (\bodega -> (bodega, capacidad bodega)) bodegasConStock) articulos
+            guardarBodegas (obtenerBodegas bodegasActualizadas)
+            idFactura <- (getIdOrdenCompra ordenCompra ++) <$> getCurrentTimestamp
+            tiempoActual <- getCurrentTimestamp
+            let lineasFactura = mapMaybe (\(codigoArticulo, cantidad) -> do
+                    articulo <- buscarArticuloPorCodigo codigoArticulo guarArticulos
+                    return $ ArticuloFactura
+                                codigoArticulo
+                                (nombreArticulo articulo)
+                                cantidad
+                                (costoArticulo articulo)
+                                (tipoArticulo articulo)
+                                (tipoIVAArticulo articulo)
+                                (fromIntegral cantidad * costoArticulo articulo)
+                            ) articulos
             let subtotal = calcularSubtotal lineasFactura
             let total = calcularTotal lineasFactura
-            return $ Just $ Factura idFactura usuario empresa "Activo" tiempoActual lineasFactura subtotal total
+            return $ Just $ Factura idFactura usuario empresa "Activa" tiempoActual lineasFactura subtotal total
+
+getCurrentTimestamp :: IO String
+getCurrentTimestamp = fmap (formatTime defaultTimeLocale "%Y%m%d%H%M%S") getCurrentTime
 
 {-
 Entradas: La factura creada.
@@ -173,7 +169,7 @@ Salidas: La información de la factura.
 -}
 mostrarFactura :: Factura -> IO ()
 mostrarFactura factura = do
-    putStrLn "Información de la factura:"
+    putStrLn "\nInformación de la factura:"
     putStrLn $ "ID: " ++ getIdFactura factura
     putStrLn $ "Cédula del cliente: " ++ show (getCedulaClienteFactura factura)
     putStrLn $ "Nombre del cliente: " ++ textTostring (getNombreClienteFactura factura)
@@ -181,6 +177,8 @@ mostrarFactura factura = do
     putStrLn $ "Fecha y hora: " ++ getFechaFactura factura
     putStrLn "Líneas de la factura:"
     mapM_ mostrarLineaFactura (getArticulosFactura factura)
+    putStrLn $ "SubTotal: " ++  show (subtotalFactura factura)
+    putStrLn $ "Total: " ++  show (totalFactura factura) ++ "\n"
 
 {-
 Entradas: La lista de los artículos de la factura.
@@ -188,61 +186,33 @@ Salidas: La información de cada línea.
 -}
 mostrarLineaFactura :: ArticuloFactura -> IO ()
 mostrarLineaFactura linea = do
-    putStrLn $ "Código de artículo: " ++ getCodigoArticuloFactura linea
-    putStrLn $ "Nombre de artículo: " ++ getNombreArticuloFactura linea
-    putStrLn $ "Cantidad: " ++ show (getCantidadArticulosFactura linea)
-    putStrLn $ "Costo unitario: " ++ show (getCostoArticuloFactura linea)
-    putStrLn $ "Subtotal: " ++ show (getSubTotalArticuloFactura linea)
+    putStrLn $ "\tCódigo de artículo: " ++ getCodigoArticuloFactura linea
+    putStrLn $ "\tNombre de artículo: " ++ getNombreArticuloFactura linea
+    putStrLn $ "\tCantidad: " ++ show (getCantidadArticulosFactura linea)
+    putStrLn $ "\tCosto unitario: " ++ show (getCostoArticuloFactura linea)
+    putStrLn $ "\tSubtotal: " ++ show (getSubTotalArticuloFactura linea)
 
 {-
-crearFactura :: [Bodega] -> [Articulo] -> [OrdenCompra] -> [Factura] -> IO ()
-crearFactura bodegas articulos ordenesCompra facturas = do
-  putStrLn "\t\tFacturación de Ordenes de Compra\n"
-  putStr "Escriba el código de la orden de compra a facturar: "
-  hFlush stdout
-  ioIdOrdenCompra <- getLine
-  let idOrdenCompra = pack ioIdOrdenCompra :: Text
-  let existeFactura = verificarExistenciaFactura facturas idOrdenCompra 0
-  if existeFactura
-    then do
-      putStrLn "\nLa factura ya existe\n"
-    else
-      let ordenCompra = verificarExistenciaOrdenCompra ordenesCompra idOrdenCompra 0
-       in if length ordenCompra == 0
-            then
-              putStrLn ("\nNo existe la orden de compra con el código " ++ unpack idOrdenCompra)
-            else
-              let objetoOrdenCompra = ordenCompra !! 0
-               in putStrLn "Se ha creado la factura"
-
-verificarExistenciaFactura :: [Factura] -> Text -> Int -> Bool
-verificarExistenciaFactura facturas idFactura indice =
-  if length facturas == 0 || length facturas == indice
-    then
-      False
-    else
-      let factura = facturas !! indice
-          idFacturaGuardada = getIdFactura factura
-      in if idFacturaGuardada == (unpack idFactura)
-        then
-          True
-        else
-          verificarExistenciaFactura facturas idFactura (indice + 1)
-
-verificarExistenciaOrdenCompra :: [OrdenCompra] -> Text -> Int -> [OrdenCompra]
-verificarExistenciaOrdenCompra ordenesCompra idOrdenCompra indice =
-  if length ordenesCompra == 0 || length ordenesCompra == indice
-    then
-      []
-    else
-      let ordenCompra = ordenesCompra !! indice
-          idOrdenCompraString = getIdOrdenCompra (ordenCompra)
-          idOrdenCompraGuardado = pack idOrdenCompraString
-      in if idOrdenCompraGuardado == idOrdenCompra
-        then
-          [ordenCompra]
-        else
-          verificarExistenciaOrdenCompra ordenesCompra idOrdenCompra (indice + 1)
+Entradas: Una lista de las ordenes de compra. La lista de bodegas. La empresa.
+Salidas: La información de éxito.
 -}
+facturacion :: [OrdenCompra] -> [Bodega] -> [Usuario] -> Empresa -> [Articulo] -> IO ()
+facturacion ordenes bodegas usuarios empresa guarArticulos = do
+    putStrLn "Ingrese el ID de la orden de compra: "
+    idOrden <- getLine
+    case buscarOrdenPorId idOrden ordenes of
+        Nothing -> putStrLn "No se encontró ninguna orden de compra con ese ID."
+        Just orden -> do
+            case obtenerUsuarioPorCedula (read (getCedulaClienteOrdenCompra orden)) usuarios of
+                Nothing -> putStrLn "No se encontró el usuario asociado a la orden de compra."
+                Just usuario -> do
+                    resultadoFacturacion <- facturar orden bodegas usuario empresa guarArticulos
+                    case resultadoFacturacion of
+                        Just factura -> do
+                            putStrLn "La factura se ha generado exitosamente:"
+                            anadirFactura factura
+                            mostrarFactura factura
+                        Nothing -> putStrLn "No se pudo facturar la orden de compra debido a insuficiente stock."
+
 textTostring :: Text -> String
 textTostring = T.unpack

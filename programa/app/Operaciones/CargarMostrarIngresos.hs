@@ -33,7 +33,7 @@ cargarIngreso idUsuario fileName articulosExistentes bodegasExistentes usuarios 
             tiempo <- fmap (formatTime defaultTimeLocale "%Y%m%d%H%M%S") getCurrentTime
             contenido <- readFile ("app\\Operaciones\\Archivos\\" ++ fileName)
             let lineasIngreso = map (parseLineaIngreso articulosExistentes bodegasExistentes) (lines contenido)
-            putStrLn $ "ID de Ingreso Generado: "(idUsuario ++ "_" ++ tiempo)
+            putStrLn $ "ID de Ingreso Generado: " ++ (idUsuario ++ "_" ++ tiempo)
             return $ Just $ Ingreso (idUsuario ++ "_" ++ tiempo) idUsuario tiempo lineasIngreso
         Nothing -> do
             putStrLn "El idUsuario especificado no existe."
