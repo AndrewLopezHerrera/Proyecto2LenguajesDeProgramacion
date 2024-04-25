@@ -24,6 +24,10 @@ import System.FilePath ((</>))
 import System.Directory (getCurrentDirectory)
 import Operaciones.Facturar (textTostring)
 
+{-
+Entradas: La lista de usuarios existentes.
+Salidas: Una orden de compra.
+-}
 crearOrdenCompra :: [Usuario] -> IO (Maybe OrdenCompra)
 crearOrdenCompra usuarios= do
     putStrLn "Ingrese la cedula del cliente:"
@@ -40,6 +44,10 @@ crearOrdenCompra usuarios= do
             putStrLn "El idUsuario especificado no existe."
             return Nothing
 
+{-
+Entradas: Una lista con articulos.
+Salidas: Una lista con artículos escogidos.
+-}
 ingresarLineasOrdenCompra :: [LineaOrdenCompra] -> IO [LineaOrdenCompra]
 ingresarLineasOrdenCompra lineasPrevias = do
     putStrLn "Ingrese el codigo del articulo (o 'fin' para finalizar):"
@@ -51,6 +59,10 @@ ingresarLineasOrdenCompra lineasPrevias = do
             cantidad <- readLn :: IO Int
             ingresarLineasOrdenCompra (LineaOrdenCompra codigo cantidad : lineasPrevias)
 
+{-
+Entradas: Guarda una orden de compra a un archivo JSON.
+Salidas: El mensaje de éxito.
+-}
 guardarOrdenCompraJSON :: OrdenCompra -> IO ()
 guardarOrdenCompraJSON nuevaOrdenCompra = do
     ordenesAnteriores <- cargarOrdenesDesdeJSON
@@ -58,6 +70,10 @@ guardarOrdenCompraJSON nuevaOrdenCompra = do
     B.writeFile "app\\BasesDeDatos\\OrdenesCompra.json" (encode ordenesActualizadas)
     putStrLn "\nSe ha guardado la orden de compra."
 
+{-
+Entradas: Nada
+Salidas: Una lista de ordenes de compra cargados desde JSON.
+-}
 cargarOrdenesDesdeJSON :: IO [OrdenCompra]
 cargarOrdenesDesdeJSON = do
     cwd <- getCurrentDirectory
@@ -67,12 +83,20 @@ cargarOrdenesDesdeJSON = do
         Left err -> error err
         Right ordenes -> return ordenes
 
+{-
+Entradas: El ID de la ordena a eliminar.
+Salidas: Nada.
+-}
 eliminarOrdenPorId :: String -> IO ()
 eliminarOrdenPorId idOrdenEliminar = do
     ordenes <- cargarOrdenesDesdeJSON
     let ordenesActualizadas = filter (\orden -> idOrden orden /= idOrdenEliminar) ordenes
     B.writeFile "app\\BasesDeDatos\\OrdenesCompra.json" (encode ordenesActualizadas)
 
+{-
+Entradas: Una orden de compra.
+Salidas: La información de la orden de compra.
+-}
 mostrarOrdenCompra :: OrdenCompra -> IO ()
 mostrarOrdenCompra orden = do
     putStrLn $ "ID de Orden: " ++ getIdOrdenCompra orden
@@ -82,6 +106,10 @@ mostrarOrdenCompra orden = do
     putStrLn "Líneas de Compra:"
     mapM_ mostrarLineaOrdenCompra (getLineasOrdenCompra orden)
 
+{-
+Entradas: Una línea de la orden de compra
+Salidas: La información de la línea.
+-}
 mostrarLineaOrdenCompra :: LineaOrdenCompra -> IO ()
 mostrarLineaOrdenCompra linea = do
     putStrLn $ "Código de Artículo: " ++ getCodigoArticuloOrdenCompra linea
